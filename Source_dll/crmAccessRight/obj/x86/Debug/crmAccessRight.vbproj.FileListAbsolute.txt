@@ -1,0 +1,6 @@
+D:\73.HDDV\98.Luong\Source\luong\crmAccessRight\bin\Debug\crmAccessRight.dll
+D:\73.HDDV\98.Luong\Source\luong\crmAccessRight\bin\Debug\crmAccessRight.pdb
+D:\73.HDDV\98.Luong\Source\luong\crmAccessRight\obj\x86\Debug\crmAccessRight.vbproj.AssemblyReference.cache
+D:\73.HDDV\98.Luong\Source\luong\crmAccessRight\obj\x86\Debug\crmAccessRight.vbproj.CoreCompileInputs.cache
+D:\73.HDDV\98.Luong\Source\luong\crmAccessRight\obj\x86\Debug\crmAccessRight.dll
+D:\73.HDDV\98.Luong\Source\luong\crmAccessRight\obj\x86\Debug\crmAccessRight.pdb

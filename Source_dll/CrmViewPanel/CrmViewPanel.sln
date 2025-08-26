@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31112.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "ViewPanel", "ViewPanel\ViewPanel.vbproj", "{AC4E0595-43CB-48CB-B112-329FC2F043F0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AC4E0595-43CB-48CB-B112-329FC2F043F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC4E0595-43CB-48CB-B112-329FC2F043F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC4E0595-43CB-48CB-B112-329FC2F043F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC4E0595-43CB-48CB-B112-329FC2F043F0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3688A885-311B-4A83-A4DB-027F8B19F8A4}
+	EndGlobalSection
+EndGlobal

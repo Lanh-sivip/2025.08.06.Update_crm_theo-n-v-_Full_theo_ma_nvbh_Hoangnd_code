@@ -1,0 +1,10 @@
+D:\73.HDDV\98.Luong\Source\luong\CrmViewPanel\CrmViewPanel\obj\Debug\CrmViewPanel.vbproj.AssemblyReference.cache
+D:\73.HDDV\98.Luong\Source\luong\CrmViewPanel\CrmViewPanel\obj\Debug\CrmViewPanel.Resources.resources
+D:\73.HDDV\98.Luong\Source\luong\CrmViewPanel\CrmViewPanel\obj\Debug\CrmViewPanel.vbproj.GenerateResource.cache
+D:\73.HDDV\98.Luong\Source\luong\CrmViewPanel\CrmViewPanel\obj\Debug\CrmViewPanel.vbproj.CoreCompileInputs.cache
+D:\73.HDDV\98.Luong\Source\luong\CrmViewPanel\CrmViewPanel\bin\debug\CrmViewPanel.dll
+D:\73.HDDV\98.Luong\Source\luong\CrmViewPanel\CrmViewPanel\bin\debug\CrmViewPanel.pdb
+D:\73.HDDV\98.Luong\Source\luong\CrmViewPanel\CrmViewPanel\bin\debug\CrmViewPanel.xml
+D:\73.HDDV\98.Luong\Source\luong\CrmViewPanel\CrmViewPanel\obj\Debug\CrmViewPanel.dll
+D:\73.HDDV\98.Luong\Source\luong\CrmViewPanel\CrmViewPanel\obj\Debug\CrmViewPanel.xml
+D:\73.HDDV\98.Luong\Source\luong\CrmViewPanel\CrmViewPanel\obj\Debug\CrmViewPanel.pdb

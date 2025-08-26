@@ -1,0 +1,10 @@
+D:\Project\Sthink_Payment\Program_Source\.net4.7.2\Standard\ViewPanel\ViewPanel\bin\Release\ViewPanel.dll
+D:\Project\Sthink_Payment\Program_Source\.net4.7.2\Standard\ViewPanel\ViewPanel\bin\Release\ViewPanel.pdb
+D:\Project\Sthink_Payment\Program_Source\.net4.7.2\Standard\ViewPanel\ViewPanel\bin\Release\ViewPanel.xml
+D:\Project\Sthink_Payment\Program_Source\.net4.7.2\Standard\ViewPanel\ViewPanel\obj\Release\ViewPanel.vbprojAssemblyReference.cache
+D:\Project\Sthink_Payment\Program_Source\.net4.7.2\Standard\ViewPanel\ViewPanel\obj\Release\ViewPanel.Resources.resources
+D:\Project\Sthink_Payment\Program_Source\.net4.7.2\Standard\ViewPanel\ViewPanel\obj\Release\ViewPanel.vbproj.GenerateResource.cache
+D:\Project\Sthink_Payment\Program_Source\.net4.7.2\Standard\ViewPanel\ViewPanel\obj\Release\ViewPanel.vbproj.CoreCompileInputs.cache
+D:\Project\Sthink_Payment\Program_Source\.net4.7.2\Standard\ViewPanel\ViewPanel\obj\Release\ViewPanel.dll
+D:\Project\Sthink_Payment\Program_Source\.net4.7.2\Standard\ViewPanel\ViewPanel\obj\Release\ViewPanel.xml
+D:\Project\Sthink_Payment\Program_Source\.net4.7.2\Standard\ViewPanel\ViewPanel\obj\Release\ViewPanel.pdb
