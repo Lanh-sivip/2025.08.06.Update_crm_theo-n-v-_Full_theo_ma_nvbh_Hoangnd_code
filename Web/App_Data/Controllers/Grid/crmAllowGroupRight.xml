@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE grid [
+  <!ENTITY FilterCheckAccessRight "ma_dvcs = @@unit and user_yn = 0">
+]>
+
+<grid table="vcrmquyennsd" code="ma_dvcs, ma_quyen, user_id" order="ma_dvcs, name, user_id" filter="&FilterCheckAccessRight;" database="Sys" xmlns="urn:schemas-Sthink-company:data-grid">
+  <title v="Phân quyền nhóm người sử dụng" e="Group Access Control"></title>
+  <subTitle v="Mã quyền: %s1 - %s2." e="Right: %s1 - %s2."></subTitle>
+
+  <fields>
+	  <field name="ma_dvcs" isPrimaryKey="true" width="0" hidden="true">
+		  <header v="" e=""></header>
+	  </field>
+    <field name="user_id" isPrimaryKey="true" width="0" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ma_quyen" isPrimaryKey="true" width="100">
+      <header v="Mã quyền" e="Access Right"></header>
+    </field>
+    <field name="ten_quyen%l" width="300">
+      <header v="Tên quyền" e="Description"></header>
+    </field>
+    <field name="name" width="100">
+      <header v="Nhóm" e="Group"></header>
+    </field>
+    <field name="comment%l" width="300">
+      <header v="Tên nhóm" e="Name"></header>
+    </field>
+
+  </fields>
+
+  <views>
+    <view id="Grid">
+		<field name="ma_dvcs"/>
+      <field name="user_id"/>
+      <field name="ma_quyen"/>
+      <field name="ten_quyen%l"/>
+      <field name="name"/>
+      <field name="comment%l"/>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Loading">
+      <text>
+        <![CDATA[
+declare @message nvarchar(4000)
+select @message = ''
+if @@admin <> 1 begin
+  select @message = 'this._denyNew = true;this._denyDelete = true;'
+end
+select @message + 'load$GridAccessControl$(this);' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Closing">
+      <text>
+        <![CDATA[
+select 'dispose$GridAccessControl$(this);' as message
+return
+]]>
+      </text>
+    </command>
+  </commands>
+
+  <script>
+    <text>
+      <![CDATA[
+function load$GridAccessControl$(g) {g.add_onRender(on$GridAccessControl$Render);}
+function dispose$GridAccessControl$(g) {try {g.remove_onRender(on$GridAccessControl$Render);} catch (ex) {}}
+function on$GridAccessControl$Render(sender, eventArgs) {
+  var g = eventArgs.grid, b = (g._rightID == '');
+  g._setColumnVisible(g._getColumnOrder('ma_quyen'), b);
+  g._setColumnVisible(g._getColumnOrder('ten_quyen%l'), b);
+}
+]]>
+    </text>
+  </script>
+
+  <toolbar>
+    <button command="New">
+      <title v="Toolbar.New" e="Toolbar.New"></title>
+    </button>
+    <button command="Edit">
+      <title v="Toolbar.Edit" e="Toolbar.Edit"></title>
+    </button>
+    <button command="Delete">
+      <title v="Toolbar.Delete" e="Toolbar.Delete"></title>
+    </button>
+    <button command="Search">
+      <title v="Toolbar.Search" e="Toolbar.Search"></title>
+    </button>
+    <button command="Freeze">
+      <title v="Toolbar.Freeze" e="Toolbar.Freeze"></title>
+    </button>
+  </toolbar>
+
+</grid>

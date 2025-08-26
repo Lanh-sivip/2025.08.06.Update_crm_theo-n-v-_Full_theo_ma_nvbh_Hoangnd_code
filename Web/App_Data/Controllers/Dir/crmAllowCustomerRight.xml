@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<dir table="crmquyenkh" code="ma_dvcs, ma_kh" order="ma_dvcs, ma_kh" xmlns="urn:schemas-Sthink-company:data-dir">
+  <title v="quyền truy cập" e="Access Right"></title>
+
+  <fields>
+    <field name="ma_dvcs" isPrimaryKey="true" readOnly="true" hidden="true" disabled="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ma_kh" isPrimaryKey="true" disabled="true">
+      <header v="Mã khách hàng" e="Employee ID"></header>
+      <items style="AutoComplete" controller="Customer" reference="ten_kh%l" key="status = '1'" check="1 = 1" information="ma_kh$dmkh.ten_kh%l"/>	  
+    </field>
+    <field name="ten_kh%l" readOnly="true" external="true" defaultValue="''">
+      <header v="" e=""></header>
+    </field>
+    <field name="name" external="true" defaultValue="''">
+      <header v="Người sử dụng" e="User"></header>
+      <items style="AutoComplete" controller="UserGroup" reference="comment%l" key="admin = 0 and user_yn = 1 and status = '1' and exists(select 1 from @@appDatabaseName..sysunitrights r where r.user_id = @@userID and r.ma_dvcs = @@unit and r.r_access=1)" check="admin = 0 and user_yn = 1 and exists(select 1 from @@appDatabaseName..sysunitrights r where r.user_id = @@userID and r.ma_dvcs = @@unit and r.r_access=1)" information="name$userinfo2.comment%l"/>
+      <clientScript><![CDATA[onchange=onChange$AllowCustomerRightForm$UserID(this);]]></clientScript>
+    </field>
+    <field name="comment%l" readOnly="true" external="true" defaultValue="''">
+      <header v="" e=""></header>
+    </field>
+    <field name="user_id" type="Int32" hidden="true" disabled="true">
+      <header v="" e=""></header>
+      <items style="Numeric"></items>
+    </field>
+    <field name="name2" external="true" defaultValue="char(255)" hidden="true" disabled="true" allowContain="true">
+      <header v="" e=""></header>
+    </field>
+	  <field name="bo_phan" readOnly="true" external="true" defaultValue="''" hidden="true" >
+		  <header v="" e=""></header>
+	  </field>
+  </fields>
+
+  <views>
+    <view id="Dir">
+      <item value="120, 100, 100, 100, 130, 0, 0"/>
+      <item value="1110011: [ma_kh].Label, [ma_kh], [ten_kh%l], [ma_dvcs], [bo_phan]"/>
+      <item value="1110011: [name].Label, [name], [comment%l], [user_id], [name2]"/>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Showing">
+      <text>
+        <![CDATA[
+declare @n varchar(32), @m nvarchar(512)
+select @n = rtrim(name), @m = case @@language when 'v' then rtrim(comment) else rtrim(comment2) end
+from @@sysDatabaseName..userinfo2 where id in (select user_id from @@table where ma_dvcs = @ma_dvcs and ma_kh = @ma_kh)
+select 'this._name = ''' + isnull(@n, '') + ''';this._comment = ''' + replace(replace(isnull(@m, ''), '\', '\\'), '''', '\''') + ''';init$AllowCustomerRightForm(this)' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Loading">
+      <text>
+        <![CDATA[
+select 'active$AllowCustomerRightForm(this)' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Declare">
+      <text>
+        <![CDATA[
+declare @$exists nvarchar(512)
+select @$exists = case when @@language = 'v' then N'Người sử dụng <span class="Highlight">%s</span> đã được khai báo.' else N'The user <span class="Highlight">%s</span> already exists.' end
+]]>
+      </text>
+    </command>
+
+    <command event="Updating">
+      <text>
+        <![CDATA[
+--if @@admin <> 1 return
+declare @id int
+select @id = user_id from @@table where ma_dvcs= @ma_dvcs and ma_kh= @ma_kh
+if @id <> @user_id and isnull(@user_id, 0) <> 0
+  begin
+    if exists(select 1 from @@table where user_id = @user_id and (rtrim(ma_dvcs) + rtrim(ma_kh)) <> (rtrim(@ma_dvcs) + rtrim(@ma_kh)))
+      begin
+        declare @userName nvarchar(128)
+        select @userName = case @@language when 'v' then rtrim(comment) else rtrim(comment2) end from @@sysDatabaseName..userinfo2 where id = @user_id
+        select 'name' as field, replace(@$exists, '%s', rtrim(@userName)) as message
+        return
+      end
+  end
+]]>
+      </text>
+    </command>
+  </commands>
+
+  <script>
+    <text>
+      <![CDATA[
+function active$AllowCustomerRightForm(f) {f.add_onResponseComplete(on$AllowCustomerRightForm$ResponseComplete);}
+function init$AllowCustomerRightForm(f) {
+  f.setItemControlBehavior('name', f._name, f._comment, true);
+  f._controlFocus = f.getItem('name');
+}
+function onChange$AllowCustomerRightForm$UserID(o) {
+  var f = o.parentForm;
+  f.setItemValue('name2', o.value);
+  f.request('UserID', 'UserID', ['name']);
+}
+function on$AllowCustomerRightForm$ResponseComplete(sender, e) {
+  var f = e.object, context = e.type.Context, result = e.type.Result;
+  switch (context) {
+    case 'UserID':
+      f.setItemValue('user_id', result[0].Value);
+      break;
+    default:
+      break;
+  }
+}
+]]>
+    </text>
+  </script>
+
+  <response>
+    <action id="UserID">
+      <text>
+        <![CDATA[
+if exists(select 1 from @@sysDatabaseName..userinfo2 where name = @name) begin
+  select id from @@sysDatabaseName..userinfo2 where name = @name
+  return
+end else begin
+  select 0 as value
+  return
+end
+]]>
+      </text>
+    </action>
+  </response>
+
+</dir>

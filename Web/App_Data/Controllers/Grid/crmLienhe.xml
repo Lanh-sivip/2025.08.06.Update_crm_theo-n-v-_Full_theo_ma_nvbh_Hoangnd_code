@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<grid table="vcrmlienhe" code="ma_dvcs, ma_kh, stt_rec0" order="stt_rec0" filter="ma_dvcs = @@unit" xmlns="urn:schemas-Sthink-company:data-grid">
+  <title v="" e=""></title>
+  <subTitle v="" e=""></subTitle>
+  <partition table="crmlienhe" prime="crmlienhe" inquiry="" field="" expression="''" increase="{0}" default=""/>
+  <fields>	  
+    
+	  <field name="ma_kh" isPrimaryKey="true" width="0" hidden="true">
+		  <header v="" e=""></header>
+	  </field>
+    <field name="stt_rec0" isPrimaryKey="true" width="0" hidden="true">
+      <header v="" e=""></header>
+    </field>
+	  
+	  <field name="ten_lienhe%l" width="300" allowSorting="true" allowFilter="true">
+		  <header v="Tên liên hệ" e="Customer Name"></header>
+	  </field>
+	  <field name="chuc_vu" width="150" allowSorting="true" allowFilter="true">
+		  <header v="Chức vụ" e="Position"></header>
+	  </field>
+	  <field name="dien_thoai" width="200" allowSorting="true" allowFilter="true">
+		  <header v="Điện thoại" e="Phone"></header>
+	  </field>
+	  <field name="e_mail" width="200" allowSorting="true" allowFilter="true">
+		  <header v="Email" e="Email"></header>
+	  </field>
+	  <field name="ghi_chu" width="200" allowSorting="true" allowFilter="true">
+		  <header v="Ghi chú" e="Note"></header>
+	  </field>
+	  <field name="ma_dvcs" isPrimaryKey="true" width="0" hidden="true">
+		  <header v="" e=""></header>
+	  </field>
+  </fields>
+
+  <views>
+    <view id="Grid">	
+		<field name="ma_kh"/>
+      <field name="stt_rec0"/>
+
+		<field name="ten_lienhe%l"/>
+		<field name="chuc_vu"/>
+		<field name="dien_thoai"/>
+		<field name="e_mail"/>
+		<field name="ghi_chu"/>
+		<field name="ma_dvcs"/>
+    </view>
+  </views>
+
+</grid>

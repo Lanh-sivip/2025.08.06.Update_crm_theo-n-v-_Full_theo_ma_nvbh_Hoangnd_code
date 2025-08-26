@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<lookup table="crmgdtn" filter="ma_dvcs IN (SELECT ma_dvcs FROM sysunitrights WHERE user_id = @@userID AND r_access = 1)" code="ma_gdtn" name="ten_gdtn%l" order="ti_le" xmlns="urn:schemas-Sthink-company:data-lookup">
+
+  <header v="Chăm sóc tiềm năng" e="Contact"></header>
+
+  <fields>
+	<field name="ma_gdtn" allowSorting="true" allowFilter="true">
+      <header v ="Mã giai đoạn" e = "Contact number"></header>
+    </field>
+    <field name="ten_gdtn%l" allowSorting="true" allowFilter="true">
+      <header v ="Việc đã làm" e = "Contact number"></header>
+    </field>
+	<field name="ti_le" type="Decimal" dataFormatString="#00" clientDefault="Default" width="100">
+      <header v="TỈ lệ hoàn thành" e="Staged Percent"></header>
+    </field>
+		
+  </fields>
+
+</lookup>

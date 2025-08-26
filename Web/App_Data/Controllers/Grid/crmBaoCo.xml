@@ -1,0 +1,219 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE grid [
+  <!ENTITY CommandWhenVoucherBeforeInit SYSTEM "..\Include\Command\WhenVoucherBeforeInit.txt">
+  <!ENTITY CommandWhenVoucherBeforeAddNew SYSTEM "..\Include\Command\WhenVoucherBeforeAddNew.txt">
+  <!ENTITY CommandWhenVoucherAfterInit SYSTEM "..\Include\Command\WhenVoucherAfterInit.txt">
+  <!ENTITY XMLStandardVoucherToolbar SYSTEM "..\Include\XML\ExternalVoucherToolbar.xml">
+  <!ENTITY Youtube SYSTEM "..\Include\Command\youtube.txt">
+  <!ENTITY DowloadScript SYSTEM "..\Include\Javascript\DownloadScript.txt">
+  <!ENTITY TransferID "CBTran">
+  <!ENTITY CreateTicket "declare @ticket varchar(32), @filename varchar(128), @description nvarchar(128)
+select @ticket = lower(replace(newid(),'-',''))
+if @@language = 'v' select @filename = 'CBMaster.xlsx', @description = N'Giấy báo có'
+else select @filename = 'CBMaster2.xlsx', @description = N'Bank Credit Advice'
+insert into @@sysDatabaseName..ticket values(@ticket, @@userID, '&TransferID;', @filename, @description, '@@appDatabaseName', getdate());">
+]>
+
+<grid table="m46$000000" code="stt_rec" order="ngay_ct, so_ct" type="Voucher" id="BC1" uniKey="true" xmlns="urn:schemas-Sthink-company:data-grid">
+  <title v="Giấy báo có" e="Bank Credit Advice"></title>
+  <subTitle v="Cập nhật giấy báo có: thêm, sửa, xóa..." e="New, Edit, Delete Bank Credit Advice..."></subTitle>
+  <partition table="c46$000000" prime="m46$" inquiry="i46$" field="ngay_ct" expression="convert(char(6), {0}, 112)" increase="dateadd(month, 1, {0})" default="000000"/>
+  <fields>
+    <field name="stt_rec" isPrimaryKey="true" width="0" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ma_dvcs" width="100" aliasName = "a">
+      <header v="Đơn vị" e="Unit"></header>
+    </field>
+    <field name="ngay_ct" type="DateTime" dataFormatString="@datetimeFormat" width="100">
+      <header v="Ngày" e="Date"></header>
+    </field>
+    <field name="so_ct" width="100" align="right">
+      <header v="Số" e="Number"></header>
+    </field>
+    <field name="ma_kh" width="100" aliasName="a">
+      <header v="Mã khách" e="Customer ID"></header>
+    </field>
+    <field name="ten_kh%l" width="200" external="true" aliasName="b">
+      <header v="Tên khách" e="Customer Name"></header>
+    </field>
+	<field name="dien_giai" width="200" >
+      <header v="Diễn giải" e="Description"></header>
+    </field>
+    <field name="t_tien_nt" type="Decimal" dataFormatString="@foreignCurrencyAmountViewFormat" width="120" clientDefault="0">
+      <header v="Tiền" e="Amount"></header>
+      <items style="Numeric"/>
+    </field>
+    <field name="ma_nt" width="100">
+      <header v="Mã nt" e="Currency Code"></header>
+    </field>
+    <field name="user_id0" width="70" aliasName = "a">
+      <header v="User tạo" e="User"></header>
+    </field>
+	<field name="user_id2" width="70" aliasName = "a">
+      <header v="User sửa" e="User"></header>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Grid">
+      <field name="stt_rec"/>
+      <field name="ma_dvcs"/>
+      <field name="ngay_ct"/>
+      <field name="so_ct"/>
+      <field name="ma_kh"/>
+      <field name="ten_kh%l"/>
+	  <field name="dien_giai"/>
+      <field name="t_tien_nt"/>
+      <field name="ma_nt"/>
+      <field name="user_id0"/>
+      <field name="user_id2"/>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Loading">
+      <text>
+        &CreateTicket;
+        &CommandWhenVoucherBeforeInit;
+        &CommandWhenVoucherBeforeAddNew;
+        <![CDATA[select @message = @message + 'this._authorize = ' + rtrim(@@sysDatabaseName.dbo.Sthink$System$GetAuthorize(@@admin, @@userID, 'CBTran', 'New')) + ';this._key = ''' + @ticket + ''';load$Grid(this);']]>
+        &CommandWhenVoucherAfterInit;
+      </text>
+    </command>
+
+    <command event="Closing">
+      <text>
+        <![CDATA[
+select 'dispose$Grid(this);' as message
+return
+]]>
+      </text>
+    </command>
+  </commands>
+
+  <script>
+    <text>
+      <![CDATA[
+function load$Grid(g) {
+  g.add_onResponseComplete(on$GridBankCreditAdvice$ResponseComplete);
+  g.add_commandEvent(on$GridBankCreditAdvice$ExecuteCommand);
+}
+function dispose$Grid(g) {
+  try {g.remove_commandEvent(on$GridBankCreditAdvice$ExecuteCommand);} catch (ex) {}
+  try {g.remove_onResponseComplete(on$GridBankCreditAdvice$ResponseComplete);} catch (ex) {}
+}
+function on$GridBankCreditAdvice$ExecuteCommand(sender, e) {
+  var action = e.type.Action, g = sender;
+  switch (action) {
+    case 'ImportData':
+      show$Form(g, 'CBMasterImport');
+      break;
+    case 'Download':
+      request$Download(g, action);
+      break;
+    default:
+      break;
+  }
+}
+function on$GridBankCreditAdvice$ResponseComplete(sender, e) {
+  var g = e.object, context = e.type.Context, result = e.type.Result, o = e.type.Object;
+  switch (context) {
+    case 'Download':
+      g._key = result[0].Value;
+      break;
+    default:
+      break;
+  }
+}
+function show$Form(g, c) {(g._authorize == 1) && (!g._denyNew) ? g.showForm(c) : $message.show(g._denyMessage ? g._denyMessage : $df.getResources(g._language, "Message.NotAccess"));}
+]]>
+      &DowloadScript;
+	  &Youtube;
+    </text>
+  </script>
+
+  <response>
+    <action id="Download">
+      <text>
+        &CreateTicket;<![CDATA[
+select @ticket as value
+return
+]]>
+      </text>
+    </action>
+  </response>
+
+  <queries>
+    
+    <query event="Finding">
+      <text>
+        <![CDATA[exec Sthink$App$Voucher$Finding
+@@id, @@master, @@prime, @@inquiry, @@partition, @@expression, @@increase, @@extension, @@refresh, @@pageIndex, @@pageCount, @@lastPage, @@lastCount, @@firstItem, @@lastItem, 
+@@keyMaster, @@keyDetail, 'stt_rec', @@textList, @@textExternal, 
+'a left join dmkh b on a.ma_kh = b.ma_kh', @@textOrderBy, @@admin, @@userID, 1, 
+null, null, '', '', '*', N'0', @@unit]]>
+      </text>
+    </query>
+  </queries>
+
+  <css>
+    <text>
+      <![CDATA[
+.Column_stt_rec{visibility:hidden;display:none;}
+div.ImportData{background-image:url(../images/Upload.png);background-repeat:no-repeat;background-position:0 0;}
+div.ImportDataOverGreen{background-position:0 -22px;}
+div.Download{background-image:url(../Images/Download.png);background-repeat:no-repeat;background-position:0 0;}
+div.DownloadOverGreen{background-position:0 -22px;}
+]]>
+    </text>
+  </css>
+
+  <toolbar>
+    <button command="New">
+      <title v="Toolbar.New" e="Toolbar.New"></title>
+    </button>
+    <button command="Edit">
+      <title v="Toolbar.Edit" e="Toolbar.Edit"></title>
+    </button>
+    <button command="Delete">
+      <title v="Toolbar.Delete" e="Toolbar.Delete"></title>
+    </button>
+
+    <button command="Clone">
+      <title v="Toolbar.Copy" e="Toolbar.Copy"></title>
+    </button>
+
+    <!--<button command="Search">
+      <title v="Toolbar.Search" e="Toolbar.Search"></title>
+    </button>-->
+    <button command="View">
+      <title v="Toolbar.View" e="Toolbar.View"></title>
+    </button>
+    <button command="Print">
+      <title v="Toolbar.Print" e="Toolbar.Print"></title>
+    </button>
+
+    <button command="-">
+      <title v="-" e="-"/>
+    </button>
+
+    <button command="ImportData">
+      <title v="Lấy dữ liệu từ tệp..." e="Import Data from File..."></title>
+    </button>
+    <button command="Download">
+      <title v="Tải tệp mẫu..." e="Download Template File..."/>
+    </button>
+
+    <button command="Separate">
+      <title v="-" e="-"/>
+    </button>
+    <button command="Freeze">
+      <title v="Toolbar.Freeze" e="Toolbar.Freeze"></title>
+    </button>
+	<button command="Youtube">
+      <title v="Youtube" e="Youtube"></title>
+    </button>
+  </toolbar>
+</grid>

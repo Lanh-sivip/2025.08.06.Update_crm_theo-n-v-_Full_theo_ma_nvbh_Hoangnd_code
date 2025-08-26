@@ -1,0 +1,47 @@
+﻿  <commands>
+    <command event="Loading">
+      <text>
+        <![CDATA[
+select 'set$ViewPanelCustomerID(this);' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Scattering">
+      <text>
+        <![CDATA[
+select 'set$ViewPanelCustomerID(this);' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Inserting">
+      <text>
+        <![CDATA[
+if exists(select 1 from @@table where ma_dvcs = @ma_dvcs and ma_kh = @ma_kh) select @stt_rec0 = max(stt_rec0), @line_nbr = max(line_nbr) from @@table where ma_dvcs = @ma_dvcs and ma_kh = @ma_kh
+else select @stt_rec0 = '000', @line_nbr = 0
+
+exec dbo.Sthink$CRM$GetRowID @stt_rec0 output, @line_nbr output
+select @datetime0 = getdate(), @datetime2 = getdate(), @user_id0 = @@userID, @user_id2 = @@userID
+]]>
+      </text>
+    </command>
+
+    <command event="Inserted">
+      <text>
+        <![CDATA[
+select @stt_rec0 as stt_rec0
+]]>
+      </text>
+    </command>
+
+    <command event="Updated">
+      <text>
+        <![CDATA[
+update @@table set datetime2 = getdate(), user_id2 = @@userID where ma_dvcs = @ma_dvcs and ma_kh = @ma_kh and stt_rec0 = @stt_rec0
+]]>
+      </text>
+    </command>
+  </commands>

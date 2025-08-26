@@ -1,0 +1,386 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE dir [
+  <!ENTITY XMLSuggestion SYSTEM "..\Include\XML\MaxNumber.xml">
+  <!ENTITY ScriptSuggestion SYSTEM "..\Include\Javascript\Suggestion.txt">
+
+  <!ENTITY ScriptIrregular SYSTEM "..\Include\Javascript\Irregular.txt">
+  <!ENTITY ScriptWatermark SYSTEM "..\Include\Javascript\TextboxWatermark.txt">
+
+  <!ENTITY CheckDepartmentRight "declare @rights tinyint; if @@admin = 1 select @rights = 1
+else begin if exists(select 1 from @@sysDatabaseName..hrquyenbp where user_id = @@userID)
+select @rights = 1 else select @rights = 0 end;">
+  <!ENTITY CreateTicket "declare @ticket varchar(32)
+select @ticket = '';select @ticket = lower(replace(newid(),'-','')); 
+insert into @@sysDatabaseName..ticket(ticket, user_id, data, datetime0) values(@ticket, @@userID, '@@appDatabaseName', getdate());">
+
+  <!ENTITY ListIndex "6">
+  <!ENTITY ListWidth "769">
+  <!ENTITY ListField SYSTEM "..\Include\XML\ListField.txt">
+  <!ENTITY ListView SYSTEM "..\Include\XML\ListView.xml">
+  <!ENTITY ListCategory SYSTEM "..\Include\XML\ListCategory.xml">
+  <!ENTITY ListShowing SYSTEM "..\Include\XML\ListVoucherShowing.xml">
+  <!ENTITY ListWarning SYSTEM "..\Include\Command\ListWarningMessage.txt">
+  <!ENTITY ListCommand SYSTEM "..\Include\Command\ListCommand.txt">
+  <!ENTITY ListScript SYSTEM "..\Include\Javascript\ListScript.txt">
+  <!ENTITY ListTicket SYSTEM "..\Include\XML\ListGetTicket.xml">
+
+  <!ENTITY ListDeclare "declare @fileTicket nvarchar(256)
+select @invoke = '', @script = '', @fileTicket = ''">
+  <!ENTITY ListQuery "select '' as message, '' as field, @invoke as invoke, @script as script">
+]>
+
+<dir table="svTaptin" code="stt_rec" order="stt_rec" xmlns="urn:schemas-Sthink-company:data-dir">
+  <title v="thông tin tập tin" e="File Information"></title>
+
+  <fields>
+    <field name="stt_rec" isPrimaryKey="true" allowNulls="false" dataFormatString="@upperCaseFormat" hidden="true" readOnly="true">
+      <header v="" e=""></header>
+      <items style="Mask"/>
+    </field>
+    <field name="ma_dvcs" dataFormatString="@upperCaseFormat" hidden="true" readOnly="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ten_file" allowNulls="false">
+      <header v="Tên tập tin" e="First Name"></header>
+    </field>
+    <field name="ngay_file" type="DateTime" dataFormatString="@datetimeFormat" allowNulls="false">
+      <header v="Ngày" e=" Date"></header>
+    </field>	
+
+    <field name="ma_kh">
+      <header v="Khách hàng" e="Customer"></header>
+      <items style="AutoComplete" controller="Customer" reference="ten_kh%l" key="status = '1'" check="1 = 1" information="ma_kh$dmkh.ten_kh%l"/>
+    </field>
+    <field name="ten_kh%l" readOnly="true" external="true" defaultValue="''">
+      <header v="" e=""></header>
+    </field>
+    <field name="ma_vv">
+      <header v="Vụ việc" e="Job"></header>
+      <items style="AutoComplete" controller="Job" reference="ten_vv%l" key="status = '1'" check="1 = 1" information="ma_vv$dmvv.ten_vv%l"/>
+    </field>
+    <field name="ten_vv%l" readOnly="true" external="true" defaultValue="''">
+      <header v="" e=""></header>
+    </field>	
+    <field name="ma_bp" categoryIndex="9">
+      <header v="Bộ phận" e="Department"></header>
+      <items style="AutoComplete" controller="Department" reference="ten_bp%l" key="status = '1'" check="1 = 1" information="ma_bp$dmbp.ten_bp%l"/>
+    </field>
+    <field name="ten_bp%l" readOnly="true" external="true" defaultValue="''" categoryIndex="9">
+      <header v="" e=""></header>
+    </field>
+
+	<field name="status" inactivate="true" clientDefault="3">
+      <header v="Trạng thái" e="Status"></header>
+      <items style="DropDownList">
+        <item value="1">
+          <text v="1. Hợp đồng" e="1. Voucher"/>
+        </item>
+        <item value="2">
+          <text v="2. Phụ lục" e="2. Document"/>
+        </item>
+        <item value="3">
+          <text v="3. Báo giá" e="3. Other"/>
+        </item>
+		<item value="4">
+          <text v="4. BB đối chiếu công nợ" e="3. Other"/>
+        </item>
+		<item value="5">
+          <text v="5. Khác" e="3. Other"/>
+        </item>
+      </items>
+    </field>
+    <field name="ghi_chu" rows="2" categoryIndex="9">
+      <header v="Ghi chú" e="Note"></header>
+    </field>
+    <field name="ten_ttnv%l" readOnly="true" external="true" defaultValue="''" categoryIndex="9">
+      <header v="" e=""></header>
+    </field>		
+    &ListField;
+  </fields>
+
+  <views>
+    <view id="Dir" height="315" anchor="8">
+      <item value="120, 30, 20, 50, 110, 100, 20, 236, 47, 20, 0, 0"/>
+      <item value="1100-----------: [ngay_file].Label, [ngay_file]"/>	  
+      <item value="110000011: [ten_file].Label, [ten_file], [stt_rec], [ma_dvcs]"/>
+	  
+      <item value="11001000-------: [ma_kh].Label, [ma_kh], [ten_kh%l]"/>
+	  <item value="11001000-------: [ma_vv].Label, [ma_vv], [ten_vv%l]"/>
+      <item value="11000----------: [status].Label, [status]"/>	  
+
+      &ListView;
+	  
+	  <item value="11001000-------: [ma_bp].Label, [ma_bp], [ten_bp%l]"/>
+      <item value="1100000000: [ghi_chu].Label, [ghi_chu]"/>
+      <categories>
+
+        &ListCategory;
+
+        <category index="9" columns="120, 30, 20, 50, 110, 100, 20, 30, 50, 20, 203">
+          <header v="Khác" e="Other"/>
+        </category>
+      </categories>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Showing">
+      <text>
+        <![CDATA[
+declare @fileTicket nvarchar(256)
+select @fileTicket = lower(replace(newid(),'-',''));
+insert into @@sysDatabaseName..ticket(ticket, user_id, data, datetime0) values(@fileTicket, @@userID, '@@appDatabaseName', getdate());
+select 'this._ticket = ''' + @fileTicket + ''';' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Loading">
+      <text>
+        <![CDATA[
+select 'set$ViewPanelCustomerID(this);load$FileForm(this);' as  message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Scattering">
+      <text>
+        <![CDATA[
+select 'set$ViewPanelCustomerID(this);scatter$FileForm(this);' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Closing">
+      <text>
+        <![CDATA[
+select 'close$FileForm(this);' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="InitExternalFields">
+      <text>
+        <![CDATA[
+if @@action = 'Edit' begin
+  ]]>&CreateTicket;<![CDATA[
+  select @ticket as ticket
+  return
+end
+]]>
+      </text>
+    </command>
+
+    <command event="Declare">
+      <text>
+        <![CDATA[
+declare @$exists nvarchar(512), @$conflict nvarchar(512), @$deleteConflict nvarchar(512)
+select @$exists = case when @@language = 'v' then N'Mã nhân viên <span class="Highlight">%s</span> đã khai báo trong thông tin nhân viên.' else N'The File <span class="Highlight">%s</span> already exists.' end
+select @$conflict = case when @@language = 'v' then N'Số chứng minh nhân dân <span class="Highlight">%s</span> đã có trong thông tin nhân viên.' else N'The identity card <span class="Highlight">%s</span> already exists.' end
+select @$deleteConflict = case when @@language = 'v' then N'Mã nhân viên <span class="Highlight">%s</span> đã phát sinh, không thể xóa được.' else N'Cannot delete the File ID <span class="Highlight">%s</span>. It has already been used.' end
+]]>
+      </text>
+    </command>
+
+    <command event="Inserting">
+      <text>
+        <![CDATA[
+declare @ticket varchar(32)
+select @ticket = lower(replace(newid(), '-', ''))
+declare @wsID varchar(8), @outWork varchar(32)
+select @wsID = rtrim(val) from options where upper(name) = 'M_WS_ID'
+select @outWork = rtrim(val) from options where name = 'm_tt_nghi_viec'
+select @stt_rec = max(stt_rec) from svTaptin
+select @stt_rec = @wsID + case when @stt_rec is null then '000000001' else replace(str(cast(substring(@stt_rec, 2, 9) as bigint) + 1, 9), ' ', '0') end + 'FIL'
+
+select @ma_dvcs = @@unit, @datetime0 = getdate(), @datetime2 = getdate(), @user_id0 = @@userID, @user_id2 = @@userID
+]]>
+      </text>
+    </command>
+
+    <command event="Inserted">
+      <text>
+        <![CDATA[
+declare @script nvarchar(4000), @invoke varchar(4000)
+]]>&ListDeclare;<![CDATA[
+select @script = 'showViewPanelForm(this, true);', @invoke = ''
+]]>&ListCommand;<![CDATA[
+if @invoke <> '' begin
+  select '' as message, '' as field, @stt_rec as stt_rec, @invoke as invoke, @script as script
+  return
+end else begin
+  select '' as message, '' as field, @stt_rec as stt_rec, @script as script
+  return
+end
+]]>
+      </text>
+    </command>
+
+    <command event="Updating">
+      <text>
+        <![CDATA[ 
+declare @eid char(16), @idc varchar(16), @ticket varchar(32)
+select @ticket = lower(replace(newid(), '-', ''))
+update @@table set status = @status where stt_rec = @stt_rec
+]]>
+      </text>
+    </command>
+
+    <command event="Updated">
+      <text>
+        <![CDATA[
+declare @script nvarchar(4000), @invoke varchar(4000), @imageUrl varchar(4000)
+]]>&ListDeclare;<![CDATA[
+select @script = 'showViewPanelForm(this, false);', @invoke = ''
+]]>&ListCommand;<![CDATA[
+if @invoke <> '' begin
+  select '' as message, '' as field, @stt_rec as stt_rec, @invoke as invoke, @script as script
+  return
+end else begin
+  select '' as message, '' as field, @stt_rec as stt_rec, @script as script
+  return
+end
+]]>
+      </text>
+    </command>
+
+    <command event="Deleting">
+      <text>
+        <![CDATA[
+declare @FileID varchar(33), @message nvarchar(512)
+insert into zcvoucherdel select stt_rec, ma_dvcs, 'FIL', ma_kh, 0, ngay_file, ngay_file, 'TAPTIN', status, datetime0, getdate(), user_id0, @@userID from svTaptin where stt_rec = @stt_rec
+]]>
+      </text>
+    </command>
+
+    <command event="Deleted">
+      <text>
+        <![CDATA[
+select 'FileUploadExtender.UploadExtender.Process.DeleteFile(svFiles, List, ' + @stt_rec + ',' + @@language + ',@@appDatabaseName,' + rtrim(@@userID) + ')' as invoke
+]]>
+      </text>
+    </command>
+
+    <command event="Checking">
+      <text>
+        <![CDATA[
+var f = this;
+if (f._checked) {
+  f.setItemValue('fileticket', f._ticket);
+  f._upload$Extender.upload();
+}
+]]>
+      </text>
+    </command>
+  </commands>
+
+  <script>
+    <text>
+      <![CDATA[
+function load$FileForm(f) {
+  f.add_commandEvent(on$FileForm$ExecuteCommand);
+  f.add_onResponseComplete(on$FileForm$ResponseComplete);
+  f._tabContainer.add_activeTabChanged(onChange$FileForm$Tab);
+  f._tabContainer._loaded = true;
+  create$Upload$Extender(f, f.getItemValue('stt_rec')); 
+}
+function scatter$FileForm(f) {
+  f._upload$Extender._uploadKey = f.getItemValue('stt_rec');
+  f._upload$Extender._load(1);
+  f._upload$Extender.disableUpload(false);
+}
+function close$FileForm(f) {
+  if (f._upload$Extender) {
+    try {f._upload$Extender.remove_commandEvent(listView$ExecuteCommand);} catch (ex) {}
+    f._upload$Extender.dispose();
+    f._upload$Extender = null;
+  }
+  if (f._tabContainer) try {f._tabContainer.remove_activeTabChanged(onChange$FileForm$Tab);} catch (ex) {}
+  try {f.remove_onResponseComplete(on$FileForm$ResponseComplete);} catch (ex) {}
+  try {f.remove_commandEvent(on$FileForm$ExecuteCommand);} catch (ex) {}
+}
+function on$FileForm$ExecuteCommand(sender, e) {
+  var action = e.type.Action, f = sender;
+  switch (action) {
+    case 'Shown':
+      f._upload$Extender.switchViewMode();
+      f._upload$Extender._uploadKey = f.getItemValue('stt_rec');
+      break;
+    default:
+      break;
+  }
+}
+
+function showViewPanelForm(f, t) {
+  var g = f.grid, view = g._view;  
+  if (t) {
+    if (view._controller) {
+      if (view._type) view.showGridDetail();
+      else window.setTimeout(function() {view.showViewPanel();}, 100); 
+    }
+  }
+  else {
+    view.scatterMemvar(f);
+  }
+}
+function getRandomKey(l) {
+	var s = '', c = '0123456789abcdefghiklmnopqrstuvwxyz';
+	for (var i = 0; i < l; i++) {
+		var r = Math.floor(Math.random() * c.length);
+		s += c.substring(r, r + 1);
+	}
+  return s;
+}
+
+function onChange$FileForm$Tab(sender, e) {sender.parentForm.focusWhenTabChanged([null,'ma_bp']);}
+function on$FileForm$ResponseComplete(sender, e) {
+  var f = e.object, context = e.type.Context, result = e.type.Result;
+  switch (context) {
+    case 'ListTicket':
+      f._ticket = result[0].Value;
+      break;
+    default:
+      break;
+  }
+}
+]]>
+      &ScriptSuggestion;
+      &ListScript;
+      &ScriptIrregular;
+      &ScriptWatermark;
+    </text>
+  </script>
+
+  <response>
+    &XMLSuggestion;
+
+    &ListTicket;
+  </response>
+
+  <css>
+    <text>
+      <![CDATA[
+.Break{margin:1px 0 1px 8px;padding:0;height:1px;overflow:hidden;display:block;background-color:white;border-top:1px solid #CED3DE;}
+.Region{background:url(data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAACZCAMAAAClmLxMAAAAh1BMVEWxsbG70/LF3v/ZyLHj077P6v+xvNjZ9f+xyOXj9f/t3svt9eXt9f/t6tjFsbHFsb67yOXt9fLZyMuxsb67sbHPvLHPvMu7vL6xscvZyL67sb7PvL67vNjFvNjZ9eXFyOW7yMvj6v/j9eXj9fKxyNi709jt3uXFscvP6vK7scuxyMu7vLHF3uVs/V8HAAAD/ElEQVR4Xu2a527rMAyFtbxHks5x957v/3yX4ziSA/s6QfurkACXkkqdUIrhD6Rj+hdpr11muKm7D9zxdprybubcls2qzPBU9P3htu6vKn9dsNzbybn7UUXPq6o/vCmG/Vo0oSYVfGwaAgTnksGuyXS7n6zSGmMeKl0btB++jWIsaRtHF8+Gjzc8KaM6kaFFLgail5XLP1Qc52PB2zncWonal40Ym8Zt+Fyu5XRInToUjG4gWFrL63lEF59vnCQ3NlGGpEOtAXTvGgkGPlBk09a8NfbFJI+GX9VRhgPsdgWb3teiQIv44MW0ZHgXlk0fygaTQV26SebG9rrGGHNvdbs4vWDl6kZz/Yc/5GTSGLtyF0sw2PNW460ty0AA/19v+oU8JF75QZFlLm5ZJssAn3GgiHBLAt0IigIwKXH4wf7lrpo9EBefYwyG4BIy1IyXSMPv8zXesdKSzKfYN8ApCEIG9AQcWQL0hIOE1hLRAnMNfoZmIQNkIgLAkbugJxxoL0yk3oso/IwGHHEIemIkwaAPI1S29D0YatMqyJA8d+gCPQFHiSChpxI0gFfU4Ge6kdeNTqjoa9ATxBQv9OHA9wOjpaU/h7sKfoYkBDli7y3oCThKMOirAz4TaD36Gdxgi23hm17xNnrbxtuPjymB6IIKbl3ZZCZDlrm8ZZksw8lTJBM6djb29RxfqUw3Gm5lc1XFXCDlZRyjM+9DRhi1+OQEL+N4ySllOHIhgBKMZE8O1WEMms6dUhnvUlCCkUniifGiE5rBNiMVT3m5SFOYRIb95Q8AeMpLjOc0hYkyOOEWoDzhZdlgfEJTmFQGZAQAIy8VYA7jOU1hosw6L59PBvAyk+HlZbJMlskyz3vqILvTKq23q7W0bRlhptcq5gYat2SGPXPMTWBsv94ai0TnEpnHwjsUOElNYkMF9hKZYU8LaFkCxomZ58sMe6oH+7+EQIARZd6LIGO0lBCM7VMw9qGW/rkNJflAJ5uCUSuwLpNho2WZLJNlsozwAK/QUlbOZ7ZkNF8a7TorMbONO0mcQi11zvIz55cCTqEDcfQ9z2zJBKcReEexg5sApxN0XVXb9DSKxrYmq0XtYxqJV5LS2ZThELBCszmkkRJhsGemaIYYKSdMVnc05Zc8I32Z4db9RyYI/hna8s27Kb/kGT3himYyGf7TskyWyTKZmvXpPKh5vozUcnebCNmmpgDmmGCWjeLlqYhFW320403megIdyoY5iR/8MN660cV6LOCJN5mLMjgaISN+8KPURSE2whNvMlepyVYMfvBDlgVj0ZbnRX+1GfZURGo0gUH5e1egEJvAE28yu0UZfIYaT/uT8G1atAU8keBnMrxSmSzzD4b17reYmpDKAAAAAElFTkSuQmCC) no-repeat}
+.c11,.c41,.c71{background-position:0px -2px;}
+.c12,.c42,.c72{background-position:0px -80px;}
+.c21,.c51,.c81{background-position:0px -28px;}
+.c22,.c52,.c82{background-position:0px -106px;}
+.c31,.c61,.c91{background-position:0px -54px;}
+.c32,.c62,.c92{background-position:0px -132px;}
+.divUpload:hover{color:#3171c6;text-decoration:underline}
+.divUpload2:hover{color:#3171c6;text-decoration:underline}
+.divUpload{position:relative;width:64px!important;height:22px!important;overflow:hidden}
+.divUpload2{position:relative;width:72px!important;height:22px!important;overflow:hidden}
+.divButton{color:#3171c6;font-family:verdana;font-size:11px;height:22px!important;margin-left:0!important}
+.divInput{cursor:pointer;position:absolute;-moz-opacity:0;opacity:0;filter:alpha(opacity:0);top:0;right:0;padding:0}
+.LabelDescription{color:#73A6DE;}
+]]>
+    </text>
+  </css>
+</dir>

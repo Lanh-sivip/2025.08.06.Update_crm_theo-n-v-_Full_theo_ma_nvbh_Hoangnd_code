@@ -1,0 +1,345 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE grid [
+	<!ENTITY DowloadScript SYSTEM "..\Include\Javascript\DownloadScript.txt">
+	<!ENTITY TransferID "Customer">
+	<!ENTITY CreateTicket "declare @ticket varchar(32), @filename varchar(128), @description nvarchar(128)
+select @ticket = lower(replace(newid(),'-',''))
+if @@language = 'v' select @filename = 'Customer.xlsx', @description = N'Danh mục khách hàng'
+else select @filename = 'Customer2.xlsx', @description = N'Customer List'
+insert into @@sysDatabaseName..ticket values(@ticket, @@userID, '&TransferID;', @filename, @description, '@@appDatabaseName', getdate());">
+]>
+
+<grid table="dmkh" code="ma_kh" order="ma_kh" type="Voucher" filter="ma_dvcs = @@unit" xmlns="urn:schemas-Sthink-company:data-grid">
+	<title v="Thông tin khách hàng" e="Customer Information"></title>
+	<subTitle v="Cập nhật thông tin khách hàng: thêm, sửa, xóa..." e="Add, Edit, Delete Customer Information..."></subTitle>
+	<fields>
+		<field name="ma_kh" isPrimaryKey="true" width="75" dataFormatString="X" allowSorting="true" allowFilter="true">
+			<header v="Mã khách" e="Customer ID"></header>
+		</field>
+		<field name="ten_kh%l" width="270" allowSorting="true" allowFilter="true">
+			<header v="Tên khách hàng" e="Customer Name"></header>
+		</field>
+		<field name="dia_chi" width="270" allowSorting="true" allowFilter="true">
+			<header v="Địa chỉ" e="Address"></header>
+		</field>
+		<field name="ma_so_thue" width="100" allowSorting="true" allowFilter="true">
+			<header v="Mã số thuế" e="Tax Code"></header>
+		</field>
+
+		<field name="E_mail" width="150" allowSorting="true" allowFilter="true">
+			<header v="Email" e="Email"></header>
+		</field>
+
+		<field name="dien_thoai" width="150" allowSorting="true" allowFilter="true">
+			<header v="Điện thoại" e="Phone"></header>
+		</field>
+		<field name="ten_tt_mst" width="100" allowSorting="true" allowFilter="true">
+			<header v="Trạng thái MST" e="Description"></header>
+		</field>
+		<field name="ma_tt_mst" width="0" hidden="true">
+			<header v="" e=""></header>
+		</field>
+		<field name="ma_dvcs" isPrimaryKey="true" width="0" hidden="true" dataFormatString="X" allowSorting="true" allowFilter="true">
+			<header v="Đơn vị" e="Unit ID"></header>
+		</field>
+	</fields>
+
+	<views>
+		<view id="Grid">	
+			<field name="ma_kh"/>
+			<field name="ten_kh%l"/>
+			<field name="dia_chi"/>
+			<field name="ma_so_thue"/>
+			<field name="ten_tt_mst"/>
+			<field name="e_mail"/>
+			<field name="dien_thoai"/>
+			<field name="ma_tt_mst"/>
+			<field name="ma_dvcs"/>
+		</view>
+	</views>
+
+	<commands>
+		<command event="Loading">
+			<text>
+				&CreateTicket;
+				<![CDATA[
+declare @v nvarchar(4000)
+select @v = ''
+select @v = @v + rtrim(code) + ':' + case @@language when 'v' then name else name2 end + ',' from hrdirinfo where type = 'Gender'
+select @v = substring(@v, 0, len(@v))
+select 'this._authorize = ' + rtrim(@@sysDatabaseName.dbo.Sthink$System$GetAuthorize(@@admin, @@userID, 'hrPIGeneralInformation', 'New')) + ';this._key = ''' + @ticket + ''';init$CustomerGrid(this, ''' + @v + ''')' as message
+return
+]]>
+			</text>
+		</command>
+
+		<command event="Scattering">
+			<text>
+				<![CDATA[
+select 'refresh$CustomerViewPanel(this)' as message
+return     
+]]>
+			</text>
+		</command>
+
+		<command event="Closing">
+			<text>
+				<![CDATA[select 'dispose$CustomerGrid(this);' as message
+return]]>
+			</text>
+		</command>
+	</commands>
+
+	<script>
+		<text>
+			<![CDATA[
+function init$CustomerGrid(g, v) {
+  if (!g._name) {
+    var a1 = v.split(','), a2 = [];
+    for (var i = 0; i < a1.length; i++) {
+      a2[i] = a1[i].split(':');
+    }
+    g._name = a2;
+  }
+  set$CRM$FilterMemvar(g);
+  g.add_onResponseComplete(on$CustomerGrid$ResponseComplete);
+  g.add_commandEvent(on$CustomerGrid$ExecuteCommand);
+}
+function dispose$CustomerGrid(g) {
+  try {g.remove_commandEvent(on$CustomerGrid$ExecuteCommand);} catch (ex) {}
+  try {g.remove_onResponseComplete(on$CustomerGrid$ResponseComplete);} catch (ex) {}  
+}
+function on$CustomerGrid$ExecuteCommand(sender, e) {
+  var action = e.type.Action, g = sender, v = e.type.Value, view = g._view;
+  switch (action) {
+    case 'RowColChange':
+      var _ma_dvcs = g._getItemValue(g._activeRow, g._getColumnOrder('ma_dvcs'));
+	  var _ma_kh = g._getItemValue(g._activeRow, g._getColumnOrder('ma_kh'));
+	  var _ma_kh = g._getItemValue(g._activeRow, g._getColumnOrder('ma_kh'));
+      if ((v.Active.Row != v.Previous.Row) && (_ma_kh != '')) {
+        view._ma_dvcs = _ma_dvcs;
+		view._ma_kh = _ma_kh;
+		view._currentID = _ma_kh;
+        show$CustomerInformation(g);
+      }
+      break;
+    case 'AfterRemoveRow':
+      if (g._rowCount == 0) g._view.showTabControl('');
+      break;
+    case 'BeforeFormLoad':
+      e.type.Value.set_vars([{Name: 'b', Type: 'String', Value: view._activeDept}]);
+      break;
+    case 'ImportData':
+      show$Form(g, 'CustomerImport');
+      break;
+    case 'Download':
+      request$Download(g, action);
+      break;
+    default:
+      break;
+  }
+}
+function on$CustomerGrid$ResponseComplete(sender, e) {
+  var g = e.object, context = e.type.Context, result = e.type.Result;
+  switch (context) {
+    case 'Download':
+      g._key = result[0].Value;
+      break;
+    default:
+      break;
+  }
+}
+function refresh$CustomerViewPanel(g) {
+  var view = g._view;
+  view.showTabControl('');
+  if (g._hideViewPanel) {
+    view.deptTree.unSelect();
+    view._activeDept = view._prevTab = view._currentID = '';
+    g._hideViewPanel = false;
+  }
+}
+function show$CustomerInformation(g) {
+  var view = g._view;
+  if (view._controller) {
+    if (view._type) view.showGridDetail();
+    else window.setTimeout(function() {view.showViewPanel();}, 100);
+  }
+}
+function set$ViewPanelCustomerID(f) {
+  setItemDisable(f, 'ma_kh', true); 
+   if (f._action == 'Edit' || f._action == 'New') {
+	  if (f._action == 'New') {
+		var g = $find(f.get_id().split('_MainReport')[0] + '_MainReport');			 
+		f.getItem('ma_dvcs') && f.setItemValue('ma_dvcs', g._view._ma_dvcs);    
+		f.setItemValue('ma_kh', g._view._ma_kh);
+	  }
+	  if (f._voucherCode && (f._voucherCode == 'PO1' || f._voucherCode == 'DXA')) {		  
+		  f.getItem('ma_gd').select();
+		  f._controlFocus = f.getItem('ma_gd');
+	  }
+	  if (f._voucherCode && (f._voucherCode == 'SQ1' || f._voucherCode == 'HDA' || f._voucherCode == 'PNA')) {		  
+		  f.getItem('ong_ba').select();
+		  f._controlFocus = f.getItem('ong_ba');
+	  }
+	  if (f._voucherCode && (f._voucherCode == 'BC1' || f._voucherCode == 'BN1' || f._voucherCode == 'PT1' || f._voucherCode == 'PC1')) {		  
+		  f.getItem('dia_chi').select();
+		  f._controlFocus = f.getItem('dia_chi');
+	  }
+	  if (f._controller && (f._controller == 'crmNhatky')) {		  
+		  f.setReferenceKeyFilter('ma_lienhe');		  
+	  }	 	
+  }
+}
+function show$ViewPanelCustomerID(f) {
+  var g = $find(f.get_id().split('_MainReport')[0] + '_MainReport');
+  g._view.scatterMemvar(f);
+}
+function set$CRM$FilterMemvar(g) {
+  var view = g._view;
+  g._stringValue = []; g._dateTimeValue = [];
+  var f1 = view._stringFields, f2 = view._dateTimeFields;
+  for (var i = 1; i < f1.length; i++) g._stringValue[i] = get$FilterValue($func.trim(f1[i]));
+  for (var i = 0; i < f2.length; i++) g._dateTimeValue[i] = null;
+}
+function get$FilterValue(field) {
+  switch (field) {
+    case 'status':
+    case 'nv_cd_yn':
+      return '1';
+    default:
+      return '';
+  }
+}
+function setItemDisable(f, c, v) {
+  var a = c.split(',');
+  for (var i = 0; i < a.length; i++) {
+    var o = f.getItem($func.trim(a[i]));    
+    if (o.a) $common.setVisible(o.a, !v);
+    o.disabled = v;
+  }
+}
+function show$Form(g, c) {g._authorize == 1 ? g.showForm(c) : $message.show($df.getResources(g._language, "Message.NotAccess")) : $message.show(g._denyMessage);}
+]]>
+			&DowloadScript;
+		</text>
+	</script>
+
+	<response>
+		<action id="Download">
+			<text>
+				&CreateTicket;<![CDATA[
+select @ticket as value
+return
+]]>
+			</text>
+		</action>
+	</response>
+
+	<queries>
+		<query event="Loading">
+			<text>
+				<![CDATA[
+exec Sthink$CRM$CustomerInformation$Loading @@pageCount, @@unit, @@userID, @@admin, '@@sysDatabaseName', @@language
+]]>
+			</text>
+		</query>
+
+		<query event="Finding">
+			<text>
+				<![CDATA[
+declare @key nvarchar(4000), @join nvarchar(4000), @field nvarchar(4000), @bp_ref varchar(128)
+declare @male nvarchar(32), @female nvarchar(32), @f1 varchar(32), @f2 varchar(32), @f3 varchar(32)
+select @f1 = 'ten_bp', @f2 = 'ten_kh', @f3 = 'ten_ttnv', @bp_ref = '', @join = '', @key = 'isnull(b.nh_bp3,'''') <> '''''
+if @@language <> 'v' select @f1 = @f1 + '2', @f2 = @f2 + '2', @f3 = @f3 + '2'
+
+if (@ma_bp <> '') select @bp_ref = bp_ref from crmbp where ma_bp = @ma_bp
+select @male = case when @@language = 'v' then name else name2 end from hrdirinfo where code = '1' and type = 'Gender'
+select @female = case when @@language = 'v' then name else name2 end from hrdirinfo where code = '2' and type = 'Gender'
+select @field = 'rtrim(a.ma_kh) ma_kh, ' + @f2 + ','
+select @field = @field + 'a.dia_chi, a.ma_so_thue, a.ten_tt_mst, a.e_mail, a.dien_thoai, a.ma_tt_mst, a.ma_dvcs'
+--select @field = @field + 'ngay_sinh, ' + @f1 + ', ' + @f2 + ', ngay_vao, ' + @f3 + ''
+
+select @join = 'left join crmbp b on a.ma_nvbh = b.nh_bp3 and a.ma_dvcs = b.ma_dvcs left join crmquyenkh c on a.ma_kh = c.ma_kh and a.ma_dvcs = c.ma_dvcs'
+
+if (@ten_kh <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'a.ten_kh like N''%' + replace(ltrim(rtrim(@ten_kh)), '''', '''''') + '%'''
+--if (@ma_kh <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'a.ma_kh like ''' + replace(rtrim(@ma_kh), '''', '''''') + '%'''
+--if (@vi_tri <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'a.vi_tri like ''' + replace(rtrim(@vi_tri), '''', '''''') + '%'''
+if (@ma_bp <> '') begin
+  if (@nv_cd_yn = '1') set @key = @key + case @key when '' then '' else ' and ' end + 'b.bp_ref like ''' + replace(rtrim(@bp_ref), '''', '''''') + '%'''
+    else set @key = @key + case @key when '' then '' else ' and ' end + 'b.bp_ref = ''' + replace(rtrim(@bp_ref), '''', '''''') + ''''
+end
+
+--if (@ngay_vao1 is not null) set @key = @key + case @key when '' then '' else ' and ' end + 'a.ngay_vao >= ''' + convert(char(8), @ngay_vao1, 112) + ''''
+--if (@ngay_vao2 is not null) set @key = @key + case @key when '' then '' else ' and ' end + 'a.ngay_vao <= ''' + convert(char(8), @ngay_vao2, 112) + ''''
+
+if (@ma_so_thue <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'a.ma_so_thue like N''%' + replace(rtrim(@ma_so_thue), '''', '''''') + '%'''
+if (@dia_chi <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'a.dia_chi like N''%' + replace(rtrim(@dia_chi), '''', '''''') + '%'''
+if (@dien_thoai <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'a.dien_thoai like N''%' + replace(rtrim(@dien_thoai), '''', '''''') + '%'''
+if (@tinh_thanh <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'a.tinh_thanh like N''%' + replace(rtrim(@tinh_thanh), '''', '''''') + '%'''
+if (@nh_kh1 <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'a.nh_kh1 like N''%' + replace(rtrim(@nh_kh1), '''', '''''') + '%'''
+if (@nh_kh2 <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'a.nh_kh2 like N''%' + replace(rtrim(@nh_kh2), '''', '''''') + '%'''
+if (@nh_kh3 <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'a.nh_kh3 like N''%' + replace(rtrim(@nh_kh3), '''', '''''') + '%'''
+if (@ma_nvbh <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'a.ma_nvbh like N''%' + replace(rtrim(@ma_nvbh), '''', '''''') + '%'''
+if (@status <> '*') and (@status <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'a.status = ''' + replace(rtrim(@status), '''', '''''') + ''''
+--if (@gioi_tinh <> '*') and (@gioi_tinh <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'a.gioi_tinh = ''' + replace(rtrim(@gioi_tinh), '''', '''''') + ''''
+
+--if (@nh_vtr1 <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'd.nh_vtr1 like ''' + replace(rtrim(@nh_vtr1), '''', '''''') + '%'''
+--if (@nh_vtr2 <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'd.nh_vtr2 like ''' + replace(rtrim(@nh_vtr2), '''', '''''') + '%'''
+--if (@nh_vtr3 <> '') set @key = @key + case @key when '' then '' else ' and ' end + 'd.nh_vtr3 like ''' + replace(rtrim(@nh_vtr3), '''', '''''') + '%'''
+
+exec Sthink$CRM$CustomerInformation$Finding @@table, @@refresh, @@pageIndex, @@pageCount, @@lastPage, @@lastCount,
+  @@firstItem, @@lastItem, @key, @join, 'rtrim(a.ma_kh) + a.ma_dvcs', @field, 'a.ma_kh', @@unit, '@@sysDatabaseName', @@admin, @@userID
+]]>
+			</text>
+		</query>
+	</queries>
+
+	<css>
+		<text>
+			<![CDATA[
+div.ImportData{background-image:url(../images/Upload.png);background-repeat:no-repeat;background-position:0 0;}
+div.ImportDataOverGreen{background-position:0 -22px;}
+div.Download{background-image:url(../Images/Download.png);background-repeat:no-repeat;background-position:0 0;}
+div.DownloadOverGreen{background-position:0 -22px;}
+]]>
+		</text>
+	</css>
+
+	<toolbar>
+		<button command="New">
+			<title v="Toolbar.New" e="Toolbar.New"/>
+		</button>
+		<button command="Edit">
+			<title v="Toolbar.Edit" e="Toolbar.Edit"/>
+		</button>
+		<button command="Delete">
+			<title v="Toolbar.Delete" e="Toolbar.Delete"/>
+		</button>
+		<button command="Search">
+			<title v="Toolbar.Search" e="Toolbar.Search"></title>
+		</button>
+		<button command="View">
+			<title v="Toolbar.View" e="Toolbar.View"/>
+		</button>
+
+		<button command="-">
+			<title v="-" e="-"/>
+		</button>
+
+		<button command="ImportData">
+			<title v="Lấy dữ liệu từ tệp..." e="Import Data from File..."></title>
+		</button>
+		<button command="Download">
+			<title v="Tải tệp mẫu..." e="Download Template File..."/>
+		</button>
+
+		<button command="Separate">
+			<title v="-" e="-"/>
+		</button>
+
+		<button command="Freeze">
+			<title v="Toolbar.Freeze" e="Toolbar.Freeze"/>
+		</button>
+	</toolbar>
+</grid>

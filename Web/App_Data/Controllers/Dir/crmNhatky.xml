@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE dir [
+  <!ENTITY XMLGridCommandExtension SYSTEM "..\Include\XML\CrmGridCommandExtension.xml">
+]>
+
+<dir table="crmnhatky" code="ma_dvcs, ma_kh, stt_rec0" order="stt_rec0" xmlns="urn:schemas-Sthink-company:data-dir">
+  <title v="Nhật ký công việc" e="Family Information"></title>
+
+  <fields>	  
+	  <field name="ma_dvcs" isPrimaryKey="true" hidden="true" readOnly="true" allowNulls="false">
+		  <header v="" e=""></header>
+	  </field>
+    <field name="ma_kh" isPrimaryKey="true" hidden="true" readOnly="true" allowNulls="false">
+      <header v="" e=""></header>
+    </field>
+    <field name="stt_rec0" isPrimaryKey="true" hidden="true" readOnly="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="line_nbr" type="Int32" hidden="true" readOnly="true">
+      <header v="" e=""></header>
+      <items style="Numeric"></items>
+    </field>
+
+	  <field name="ngay_bd" type="DateTime" dataFormatString="@datetimeFormat" align="left" allowNulls="false">
+		  <header v="Ngày thực hiện" e="Date"></header>
+	  </field>
+	  <field name="ngay_hen" type="DateTime" dataFormatString="@datetimeFormat" align="left" categoryIndex="2">
+		  <header v="Ngày báo hẹn" e="Date"></header>
+	  </field>
+	  <field name="tieu_de"  allowNulls="false" categoryIndex="1">
+		  <header v="Tiêu đề" e="Memo"></header>
+	  </field>
+	  <field name="noi_dung" rows="6" categoryIndex="1">
+		  <header v="Mô tả" e="Note"></header>
+	  </field>
+	  <field name="ma_gdtn" dataFormatString="@upperCaseFormat" clientDefault="Default" allowNulls="false" categoryIndex="1">
+		  <header v="Giai đoạn" e="Item Code"></header>
+		  <items style="AutoComplete" controller="CrmGdtn" reference="ten_gdtn%l" normal="true" key="status = '1'" check="1 = 1" information="ma_gdtn$crmgdtn.ten_gdtn%l" new="Default"/>
+	  </field>
+	  <field name="ten_gdtn%l" readOnly="true" external="true" clientDefault="Default" defaultValue="''" >
+		  <header v="Tên giai đoạn" e="Description"></header>
+	  </field>
+	  <field name="chu_y" rows="6" categoryIndex="2">
+		  <header v="Chú ý" e="Note"></header>
+	  </field>
+	  <field name="muc_do" inactivate="true" clientDefault="0" categoryIndex="2">
+		  <header v="Mức độ" e="Status"></header>
+		  <items style="DropDownList">
+			  <item value="1">
+				  <text v="1. Thấp" e="1. Low"/>
+			  </item>
+			  <item value="2">
+				  <text v="2. Bình thường" e="2. Normal"/>
+			  </item>
+			  <item value="3">
+				  <text v="3. Cao" e="3. High"/>
+			  </item>
+			  <item value="4">
+				  <text v="4. Khẩn cấp" e="4. Emergency"/>
+			  </item>
+			  <item value="5">
+				  <text v="5. Rất Khẩn cấp" e="4. Very Emergency"/>
+			  </item>
+		  </items>
+	  </field>
+	  <field name="status" inactivate="true" clientDefault="0" categoryIndex="2">
+		  <header v="Trạng thái" e="Status"></header>
+		  <items style="DropDownList">
+			  <item value="1">
+				  <text v="Hẹn" e="0. Not Perform"/>
+			  </item>
+			  <item value="2">
+				  <text v="Hoàn thành" e="2. Finish"/>
+			  </item>
+		  </items>
+	  </field>
+
+	  <field name="ma_lienhe"  clientDefault="">
+		  <header v="Mã liên hệ" e="Contact Code"></header>
+		  <items style="AutoComplete" controller="CrmLienhe" reference="ten_lienhe%l" key="status = '1' and ma_kh = '{$%c[ma_kh]}'" check="status = '1' and ma_kh = '{$%c[ma_kh]}'" information="stt_rec0$crmlienhe.ten_lienhe%l"/>
+	  </field>
+	  <field name="ten_lienhe%l" readOnly="true" external="true" defaultValue="''">
+		  <header v="" e=""></header>
+	  </field>
+  </fields>
+
+  <views>
+   
+	  <view id="Dir" height="230">
+		  <item value="120, 30, 45, 25, 45, 20, 30, 25, 65, 75, 25, 0"/>		  
+		  <item value="11010000---1: [ma_lienhe].Label, [ma_lienhe], [ten_lienhe%l], [ma_dvcs]"/>
+		  <item value="11000------1: [ngay_bd].Label, [ngay_bd], [ma_kh]"/>
+		  <item value="1100000000-1: [tieu_de].Label, [tieu_de], [stt_rec0]"/>
+		  <item value="11010000---1: [ma_gdtn].Label, [ma_gdtn], [ten_gdtn%l], [line_nbr]"/>
+		  <item value="110000000000: [noi_dung].Label, [noi_dung]"/>
+
+		  <item value="11000------: [ngay_hen].Label, [ngay_hen]"/>
+		  <item value="11000000000: [chu_y].Label, [chu_y]"/>
+		  <item value="11000000---: [muc_do].Label, [muc_do]"/>
+		  <item value="11000000---: [status].Label, [status]"/>
+		  <categories>
+			  <category index="1" columns="120, 30, 45, 25, 45, 20, 30, 25, 65, 75, 25, 0">
+				  <header v="Thông tin chính" e="General"/>
+			  </category>
+			  <category index="2" columns="120, 30, 45, 25, 45, 20, 30, 25, 65, 75, 25, 0">
+				  <header v="Đặt hẹn" e="General"/>
+			  </category>
+		  </categories>
+	  </view>
+  </views>
+
+  &XMLGridCommandExtension;
+
+  <css>
+    <text>
+      <![CDATA[
+.LabelDescription{color:#73A6DE;}
+]]>
+    </text>
+  </css>
+</dir>

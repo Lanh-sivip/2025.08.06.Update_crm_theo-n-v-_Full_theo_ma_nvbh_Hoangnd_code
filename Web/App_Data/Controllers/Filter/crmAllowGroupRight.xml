@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<dir table="crmquyennsd" code="ma_quyen, user_id" order="ma_quyen, user_id" database="Sys" xmlns="urn:schemas-Sthink-company:data-dir">
+  <title v="Lọc dữ liệu" e="Filter Data"></title>
+
+  <fields>
+    <field name="ma_quyen" onDemand="true">
+      <header v="Quyền sử dụng" e="Access Right"></header>
+      <items style="AutoComplete" controller="crmAccessRight" reference="ten_quyen%l" key="status = '1'" check="1 = 1"/>
+    </field>
+    <field name="ten_quyen%l" readOnly="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="name" onDemand="true">
+      <header v="Nhóm" e="Group"></header>
+      <items style="AutoComplete" controller="UserGroup" reference="comment%l" key="@@admin = 1 and user_yn = 0 and status = '1'" check="@@admin = 1 and user_yn = 0"/>
+      <clientScript><![CDATA[onchange=onChange$GroupRightFilter$GroupID(this);]]></clientScript>
+    </field>
+    <field name="comment%l" readOnly="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="user_id" type="Int32" readOnly="true" hidden="true">
+      <header v="" e=""/>
+      <items style="Numeric"></items>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Dir">
+      <item value="120, 100, 100, 230, 0"/>
+      <item value="1110: [ma_quyen].Label, [ma_quyen], [ten_quyen%l]"/>
+      <item value="11101: [name].Label, [name], [comment%l], [user_id]"/>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Loading">
+      <text>
+        <![CDATA[
+select 'active$GroupRightFilter$(this);' as message
+return
+]]>
+
+      </text>
+    </command>
+
+    <command event="Closing">
+      <text>
+        <![CDATA[
+select 'close$GroupRightFilter$(this);' as message
+return
+]]>
+
+      </text>
+    </command>
+  </commands>
+  <script>
+    <text>
+      <![CDATA[
+function active$GroupRightFilter$(sender) {sender.add_onResponseComplete(on$GroupRightFilter$ResponseComplete);}
+function close$GroupRightFilter$(sender) {try {sender.remove_onResponseComplete(on$GroupRightFilter$ResponseComplete);} catch (ex) {}}
+function onChange$GroupRightFilter$GroupID(o) {o.parentForm.request('GroupID', 'GroupID', ['name']);}
+function on$GroupRightFilter$ResponseComplete(sender, e) {
+  var f = e.object, context = e.type.Context, result = e.type.Result;
+  switch (context) {
+    case 'Checking':
+      var g = f.grid, k = new Array();
+      g._groupID = f.getItemValue('user_id');
+      g._rightID = f.getItemValue('ma_quyen');
+      g._rightName = $func.trim(f.getItem('ten_quyen%l').value);
+      if (g._groupID != 0) Array.add(k, {Name: 'user_id', Opr: '=', Value: g._groupID, Type: 'Numeric', Ignore: false});
+      if ($func.trim(g._rightID) != '') {
+        Array.add(k, {Name: 'ma_quyen', Opr: '=', Value: g._rightID, Type: 'String', Ignore: false});
+        g._alterTitle = [null, [['%s1', g._rightID.toString(), true], ['%s2', g._rightName, true]]];
+      } else g._alterTitle = [null, [['%s1', '*', true], ['%s2', '*', true]]];
+      g.set_externalKey(k);
+      break;
+    case 'GroupID':
+      f.setItemValue('user_id', result[0].Value);
+      break;
+    default:
+      break;
+  }
+}
+]]>
+    </text>
+  </script>
+
+  <response>
+    <action id="GroupID">
+      <text>
+        <![CDATA[
+if exists(select 1 from @@sysDatabaseName..userinfo2 where name = @name) begin
+  select id from @@sysDatabaseName..userinfo2 where name = @name
+  return
+end
+]]>
+      </text>
+    </action>
+  </response>
+
+</dir>

@@ -1,0 +1,316 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE report [
+  <!ENTITY b SYSTEM ".\Include\BaseCurrency.xml">
+  <!ENTITY f SYSTEM ".\Include\ForeignCurrency.xml">
+  <!ENTITY s SYSTEM ".\Include\Separate.xml">
+
+  <!ENTITY p "../images/pdf.gif">
+  <!ENTITY e "../images/excel.gif">
+  <!ENTITY bi "../images/bilingual.png">
+
+  <!ENTITY GLTranReport SYSTEM ".\Include\GLTranReportBI.xml">
+  <!ENTITY GLTranReportSql SYSTEM ".\Include\GLTranReportSql.txt">
+]>
+
+<report xmlns="urn:schemas-Sthink-company:data-report">
+  <query>
+    <text>
+      <![CDATA[
+if dbo.Sthink$Function$CheckSQLInjection(@stt_rec) = 0 return
+]]>&GLTranReportSql;<![CDATA[
+else begin
+    declare @m_ma_nt0 varchar(10), @key varchar(128), @bilingual tinyint
+    select @m_ma_nt0 = val from options where name = N'm_ma_nt0'
+    if @@form in ('011', '021', '031', '041', '051', '061') begin
+      select @bilingual = 1
+      if @@form in ('031', '041', '051', '061') begin
+        select rtrim(a.ong_ba) as ong_ba,rtrim(b.ten_kh) as ten_kh ,rtrim(b.ten_kh2) as ten_kh2, a.dia_chi, a.dien_giai, a.t_tien, a.t_tien_nt, a.ma_nt, 
+            dbo.Sthink$Function$System$ReadCurrency(@m_ma_nt0, a.t_tien, 'V') as t_tien_in_word, 
+	          dbo.Sthink$Function$System$ReadCurrency(a.ma_nt, a.t_tien_nt, 'V') as t_tien_nt_in_word,
+            dbo.Sthink$Function$System$ReadCurrency(@m_ma_nt0, a.t_tien, 'E') as t_tien_in_word2, 
+	          dbo.Sthink$Function$System$ReadCurrency(a.ma_nt, a.t_tien_nt, 'E') as t_tien_nt_in_word2,
+            a.so_ct_goc, a.dien_giai_ct_goc, a.ma_nk, ltrim(a.so_ct) as so_ct, a.ty_gia, a.tk,
+		        replace(str(day(ngay_ct),2),' ','0') ngay, replace(str(month(ngay_ct),2),' ','0') thang, cast(year(ngay_ct) as char(4)) nam
+			    from @@prime$partition$current a with(nolock) left join dmkh b with(nolock) on a.ma_kh = b.ma_kh
+			    where stt_rec = @stt_rec
+      end else begin
+         select case when a.ong_ba <> '' then rtrim(a.ong_ba) else rtrim(b.ten_kh) end as ten_kh, case when a.ong_ba <> '' then rtrim(a.ong_ba) else rtrim(b.ten_kh2) end as ten_kh2
+					    , a.dia_chi, a.dien_giai, a.t_tien, a.t_tien_nt, a.t_tt, a.t_tt_nt, a.ma_nt, a.ma_nk,
+					    dbo.Sthink$Function$System$ReadCurrency(@m_ma_nt0, a.t_tien, 'V') as t_tien_in_word, 
+					    dbo.Sthink$Function$System$ReadCurrency(a.ma_nt, a.t_tien_nt, 'V') as t_tien_nt_in_word,
+              dbo.Sthink$Function$System$ReadCurrency(@m_ma_nt0, a.t_tien, 'E') as t_tien_in_word2, 
+					    dbo.Sthink$Function$System$ReadCurrency(a.ma_nt, a.t_tien_nt, 'E') as t_tien_nt_in_word2,
+					    a.so_ct_goc, a.dien_giai_ct_goc, a.ma_nk, ltrim(a.so_ct) as so_ct, a.tk, a.ty_gia,
+					    replace(str(day(ngay_ct),2),' ','0') ngay, replace(str(month(ngay_ct),2),' ','0') thang, cast(year(ngay_ct) as char(4)) nam
+				    from @@prime$partition$current a with(nolock) left join dmkh b with(nolock) on a.ma_kh = b.ma_kh
+  				  where stt_rec = @stt_rec
+      end
+    end else begin
+		  if @@form in ('050', '060', '070', '080', '150', '160', '030', '040', '130', '140') begin
+        declare @h_line1 as nvarchar(128), @h_line2 as nvarchar(128), @h_line3 as nvarchar(128), @h_line4 as nvarchar(128)
+        select @h_line1 = case when @@language = 'V' then cname else cname2 end from reports where ccode = 'DEC009'
+        select @h_line2 = case when @@language = 'V' then cname else cname2 end from reports where ccode = 'DEC010'
+        select @h_line3 = case when @@language = 'V' then cname else cname2 end from reports where ccode = 'DEC011'
+        select @h_line4 = case when @@language = 'V' then cname else cname2 end from reports where ccode = 'DEC012'
+
+			  select rtrim(a.ong_ba) as ong_ba,rtrim(b.ten_kh) as ten_kh ,rtrim(b.ten_kh2) as ten_kh2, a.dia_chi, a.dien_giai, a.t_tien, a.t_tien_nt, a.ma_nt, 
+			      dbo.Sthink$Function$System$ReadCurrency(@m_ma_nt0, a.t_tien, @@language) as t_tien_in_word, 
+			      dbo.Sthink$Function$System$ReadCurrency(a.ma_nt, a.t_tien_nt, @@language) as t_tien_nt_in_word,
+			      a.so_ct_goc, a.dien_giai_ct_goc, a.ma_nk, ltrim(a.so_ct) as so_ct, a.ty_gia, a.tk,
+			      replace(str(day(ngay_ct),2),' ','0') ngay, replace(str(month(ngay_ct),2),' ','0') thang, cast(year(ngay_ct) as char(4)) nam,
+            @h_line1 as h_line1, @h_line2 as h_line2, @h_line3 as h_line3, @h_line4 as h_line4
+			    from @@prime$partition$current a with(nolock) left join dmkh b with(nolock) on a.ma_kh = b.ma_kh
+			    where stt_rec = @stt_rec
+		  end else begin
+			  select case when a.ong_ba <> '' then rtrim(a.ong_ba) else rtrim(b.ten_kh) end as ten_kh, case when a.ong_ba <> '' then rtrim(a.ong_ba) else rtrim(b.ten_kh2) end as ten_kh2
+					  , a.dia_chi, a.dien_giai, a.t_tien, a.t_tien_nt, a.t_tt, a.t_tt_nt, a.ma_nt, a.ma_nk,
+					  dbo.Sthink$Function$System$ReadCurrency(@m_ma_nt0, a.t_tien, @@language) as t_tien_in_word, 
+					  dbo.Sthink$Function$System$ReadCurrency(a.ma_nt, a.t_tien_nt, @@language) as t_tien_nt_in_word,
+					  a.so_ct_goc, a.dien_giai_ct_goc, a.ma_nk, ltrim(a.so_ct) as so_ct, a.tk, a.ty_gia,
+					  replace(str(day(ngay_ct),2),' ','0') ngay, replace(str(month(ngay_ct),2),' ','0') thang, cast(year(ngay_ct) as char(4)) nam
+				  from @@prime$partition$current a with(nolock)
+					  left join dmkh b with(nolock) on a.ma_kh = b.ma_kh
+				  where stt_rec = @stt_rec
+		  end
+    end
+		select @key = 'a.stt_rec = ''' + @stt_rec + ''''
+		if @@form in ('030', '040', '130', '140', '031', '041') begin
+			exec rs_PrintCRTran2 @@language, @key, 'd46$$partition$current', @@id, @bilingual
+		end else begin
+			exec rs_PrintCRTran @@language, @key, 'd46$$partition$current'	
+		end
+end
+]]>
+    </text>
+  </query>
+
+  <forms>
+    <form id="010" reportFile="CBTRan_01" templateFile="" commandArgument="Pdf" urlImage="&p;">
+      <header v="Giấy báo có" e="Bank Credit Advice"></header>
+      <download>
+        <header v="Giấy báo có" e="Bank Credit Advice"/>
+      </download>&b;
+    </form>
+    <form id="012" reportFile="CBTRan_01_A5" templateFile="" commandArgument="Pdf" urlImage="&p;">
+      <header v="Giấy báo có in khay giấy A5" e="Bank Credit Advice"></header>
+      <download>
+        <header v="Giấy báo có in khay giấy A5" e="Bank Credit Advice"/>
+      </download>&b;
+    </form>
+    <form id="020" reportFile="CBTRan_01" templateFile="" commandArgument="Pdf">
+      <header v="Giấy báo có tiền ngoại tệ" e="Bank Credit Advice in Foreign Currency"/>
+      <download>
+        <header v="Giấy báo có tiền ngoại tệ" e="Bank Credit Advice in Foreign Currency"/>
+      </download>&f;
+    </form>
+    <form id="030" reportFile="CBTran_02" templateFile="" commandArgument="Pdf" controller="CRTRan" externalID="050">
+      <header v="Giấy báo có cho nhiều khách hàng" e="Bank Credit Advice for Many Customers"/>
+      <download>
+        <header  v="Giấy báo có cho nhiều khách hàng" e="Bank Credit Advice for Many Customers"/>
+      </download>&b;
+    </form>
+    <form id="040" reportFile="CBTran_02" templateFile="" commandArgument="Pdf" controller="CRTRan" externalID="060">
+      <header v="Giấy báo có cho nhiều khách hàng tiền ngoại tệ" e="Bank Credit Advice for Many Customers in Foreign Currency"/>
+      <download>
+        <header v="Giấy báo có cho nhiều khách hàng tiền ngoại tệ" e="Bank Credit Advice for Many Customers in Foreign Currency"/>
+      </download>&f;
+    </form>
+
+    &s;
+
+    <form id="011" reportFile="CBTRan_01BI" templateFile="" commandArgument="Pdf" languageType="0" urlImage="&bi;">
+      <header v="Giấy báo có dạng song ngữ" e="Bank Credit Advice - Bilingual Form"></header>
+      <download>
+        <header v="Giấy báo có dạng song ngữ" e="Bank Credit Advice - Bilingual Form"/>
+      </download>&b;
+    </form>
+    <form id="021" reportFile="CBTRan_01BI" templateFile="" commandArgument="Pdf" languageType="0">
+      <header v="Giấy báo có tiền ngoại tệ dạng song ngữ" e="Bank Credit Advice in Foreign Currency - Bilingual Form"/>
+      <download>
+        <header v="Giấy báo có tiền ngoại tệ dạng song ngữ" e="Bank Credit Advice in Foreign Currency - Bilingual Form"/>
+      </download>&f;
+    </form>
+    <form id="031" reportFile="CBTran_02BI" templateFile="" commandArgument="Pdf" controller="CRTRan" externalID="051" languageType="0">
+      <header v="Giấy báo có cho nhiều khách hàng dạng song ngữ" e="Bank Credit Advice for Many Customers - Bilingual Form"/>
+      <download>
+        <header  v="Giấy báo có cho nhiều khách hàng dạng song ngữ" e="Bank Credit Advice for Many Customers - Bilingual Form"/>
+      </download>&b;
+    </form>
+    <form id="041" reportFile="CBTran_02BI" templateFile="" commandArgument="Pdf" controller="CRTRan" externalID="061" languageType="0">
+      <header v="Giấy báo có cho nhiều khách hàng tiền ngoại tệ dạng song ngữ" e="Bank Credit Advice for Many Customers in Foreign Currency - Bilingual Form"/>
+      <download>
+        <header v="Giấy báo có cho nhiều khách hàng tiền ngoại tệ dạng song ngữ" e="Bank Credit Advice for Many Customers in Foreign Currency - Bilingual Form"/>
+      </download>&f;
+    </form>
+
+    &s;
+
+    <form id="110" reportFile="" templateFile="CBTran" commandArgument="Excel" urlImage="&e;">
+      <header v="Giấy báo có dạng tệp xlsx &lt;span style=&quot;color:#42842C;&quot;/&gt;(Excel)&lt;/span&gt;" e="Bank Credit Advice as Spreadsheet"></header>
+      <download>
+        <header v="Giấy báo có" e="Bank Credit Advice"/>
+      </download>&b;
+    </form>
+    <form id="120" reportFile="" templateFile="CBTranFC" commandArgument="Excel">
+      <header v="Giấy báo có tiền ngoại tệ" e="Bank Credit Advice in Foreign Currency"/>
+      <download>
+        <header v="Giấy báo có tiền ngoại tệ" e="Bank Credit Advice in Foreign Currency"/>
+      </download>&f;
+    </form>
+    <form id="130" reportFile="" templateFile="CBTran_02" commandArgument="Excel" controller="CRTRan" externalID="130">
+      <header v="Giấy báo có cho nhiều khách hàng" e="Bank Credit Advice for Many Customers"/>
+      <download>
+        <header v="Giấy báo có cho nhiều khách hàng" e="Bank Credit Advice for Many Customers"/>
+      </download>&b;
+    </form>
+    <form id="140" reportFile="" templateFile="CBTran_02FC" commandArgument="Excel" controller="CRTRan" externalID="140">
+      <header v="Giấy báo có cho nhiều khách hàng tiền ngoại tệ" e="Bank Credit Advice for Many Customers in Foreign Currency"/>
+      <download>
+        <header v="Giấy báo có cho nhiều khách hàng tiền ngoại tệ" e="Bank Credit Advice for Many Customers in Foreign Currency"/>
+      </download>&f;
+    </form>
+
+    &s;
+
+    <form id="050" reportFile="CBTran_01" templateFile="" commandArgument="Pdf" urlImage="&p;" controller="CRTRan" externalID="010">
+      <header v="Phiếu thu tiền mặt" e="Cash Receipt"/>
+      <download>
+        <header v="Phiếu thu tiền mặt" e="Cash Receipt"/>
+      </download>&b;
+    </form>
+    <form id="060" reportFile="CBTran_01" templateFile="" commandArgument="Pdf" controller="CRTRan" externalID="020">
+      <header v="Phiếu thu tiền mặt tiền ngoại tệ" e="Cash Receipt in Foreign Currency"/>
+      <download>
+        <header v="Phiếu thu tiền mặt tiền ngoại tệ" e="Cash Receipt in Foreign Currency"/>
+      </download>&f;
+    </form>
+
+    <form id="051" reportFile="CBTran_01BI" templateFile="" commandArgument="Pdf" urlImage="&bi;" controller="CRTRan" externalID="011" languageType="0">
+      <header v="Phiếu thu tiền mặt dạng song ngữ" e="Cash Receipt - Bilingual Form"/>
+      <download>
+        <header v="Phiếu thu tiền mặt dạng song ngữ" e="Cash Receipt - Bilingual Form"/>
+      </download>&b;
+    </form>
+    <form id="061" reportFile="CBTran_01BI" templateFile="" commandArgument="Pdf" controller="CRTRan" externalID="021" languageType="0">
+      <header v="Phiếu thu tiền mặt tiền ngoại tệ dạng song ngữ" e="Cash Receipt in Foreign Currency - Bilingual Form"/>
+      <download>
+        <header v="Phiếu thu tiền dạng song ngữ mặt tiền ngoại tệ" e="Cash Receipt in Foreign Currency - Bilingual Form"/>
+      </download>&f;
+    </form>
+
+    &s;
+
+    <form id="070" reportFile="CRTran_03" templateFile="" commandArgument="Pdf" urlImage="&p;" controller="CRTRan" externalID="030">
+      <header v="Phiếu thu tiền mặt in 2 liên" e="Cash Receipt - 2 Copies Per Sheet"></header>
+      <download>
+        <header v="Phiếu thu tiền mặt" e="Cash Receipt"></header>
+      </download>&b;
+    </form>
+
+    <form id="080" reportFile="CRTran_03" templateFile="" commandArgument="Pdf" controller="CRTRan" externalID="040">
+      <header v="Phiếu thu tiền mặt tiền ngoại tệ in 2 liên" e="Cash Receipt in Foreign Currency - 2 Copies Per Sheet"/>
+      <download>
+        <header v="Phiếu thu tiền mặt tiền ngoại tệ" e="Cash Receipt in Foreign Currency"/>
+      </download>&f;
+    </form>
+
+    &s;
+
+    <form id="150" reportFile="" templateFile="CRTran" commandArgument="Excel" urlImage="&e;" controller="CRTRan" externalID="110">
+      <header v="Phiếu thu tiền mặt dưới dạng tệp xlsx &lt;span style=&quot;color:#42842C;&quot;/&gt;(Excel)&lt;/span&gt;" e="Cash Receipt as Spreadsheet"/>
+      <download>
+        <header v="Phiếu thu tiền mặt" e="Cash Receipt"/>
+      </download>&b;
+    </form>
+    <form id="160" reportFile="" templateFile="CRTranFC" commandArgument="Excel" controller="CRTRan" externalID="120">
+      <header v="Phiếu thu tiền mặt tiền ngoại tệ" e="Cash Receipt in Foreign Currency"/>
+      <download>
+        <header v="Phiếu thu tiền mặt tiền ngoại tệ" e="Cash Receipt in Foreign Currency"/>
+      </download>&f;
+    </form>
+
+    &s;
+
+    &GLTranReport;
+  </forms>
+
+  <categories>
+    <category index="10" length="4">
+      <header v="Giấy báo có dạng tệp xlsx &lt;span style=&quot;color:#42842C;&quot;/&gt;(Excel)&lt;/span&gt;" e="Bank Credit Advice as Spreadsheet"></header>
+    </category>
+    <category index="15" length="4">
+      <header v="Phiếu thu tiền mặt" e="Cash Receipt"/>
+    </category>
+    <category index="26" length="4">
+      <header v="Chứng từ hạch toán" e="General Ledger Voucher"/>
+    </category>
+  </categories>
+
+  <fields>
+    <field name="title" type="String">
+      <header v="GIẤY BÁO CÓ" e="BANK CREDIT ADVICE"/>
+    </field>
+    <field name="h_line1" type="String">
+      <header v="Mẫu số 01 - TT" e="Form 01-TT"></header>
+    </field>
+    <field name="h_line2" type="String">
+      <header v="(Ban hành theo Thông tư số:" e="(According to Decision No.: 15/2006/"/>
+    </field>
+    <field name="h_line3" type="String">
+      <header v="133/2016/TT-BTC ngày 26/08/2016" e="QĐ-BTC Dated March 20th 2006"/>
+    </field>
+    <field name="h_line4" type="String">
+      <header v="của Bộ trưởng BTC)" e="of Ministry of Finance)"/>
+    </field>
+
+    <field name="h_quyen" type="String">
+      <header v="Quyển số:" e="Book No.:"/>
+    </field>
+    <field name="h_so_ct" type="String">
+      <header v="Số:" e="Voucher No.:"></header>
+    </field>
+    <field name="h_no" type="String">
+      <header v="Nợ:" e="Debit:"></header>
+    </field>
+    <field name="h_co" type="String">
+      <header v="Có:" e="Credit:"></header>
+    </field>
+
+    <field name="h_so_tien"  type="String">
+      <header  v="Số tiền:" e="Amount:"/>
+    </field>
+    <field name="h_nguoi_nop" type="String">
+      <header v="Họ và tên người nộp tiền:" e="Payer:"></header>
+    </field>
+    <field name="h_dien_giai" type="String">
+      <header v="Lý do nộp:" e="Description:"></header>
+    </field>
+    <field name="h_dia_chi" type="String">
+      <header v="Địa chỉ:" e="Address:"></header>
+    </field>
+
+    <field name="h_kem_theo" type="String">
+      <header v="Kèm theo:" e="Enclose:"></header>
+    </field>
+    <field name="h_xac_nhan" type="String">
+      <header v="Đã nhận đủ số tiền (viết bằng chữ):" e="Received Full (in Words):"></header>
+    </field>
+
+    <field name="h_bang_chu" type="String">
+      <header v="Bằng chữ:" e="In Words:"></header>
+    </field>
+    <field name="h_ct_goc" type="String">
+      <header v=" Chứng từ gốc: " e=" Original voucher(s): "></header>
+    </field>
+    <field name="h_nguoi_nop_tien" type="String">
+      <header v="NGƯỜI NỘP TIỀN" e="PAYER"></header>
+    </field>
+    <field name="h_ty_gia" type="String">
+      <header v="Tỷ giá ngoại tệ:" e="Exchange Rate:"></header>
+    </field>
+    <field name="h_tien_qd" type="String">
+      <header v="Số tiền quy đổi:" e="Amount:"></header>
+    </field>
+  </fields>
+</report>

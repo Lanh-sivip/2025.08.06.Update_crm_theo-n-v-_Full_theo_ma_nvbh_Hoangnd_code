@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<lookup table="crmbp" code="ma_bp" name="ten_bp%l" order="ma_bp" filter="ma_dvcs = @@unit" xmlns="urn:schemas-Sthink-company:data-lookup">
+  <header v="Danh mục bộ phận" e="Department List"></header>
+  <fields>
+    <field name="ma_bp" allowSorting="true" allowFilter="true">
+      <header v="Mã bộ phận" e="Department"></header>
+    </field>
+    <field name="ten_bp%l" allowSorting="true" allowFilter="true">
+      <header v="Tên bộ phận" e="Description"></header>
+    </field>
+  </fields>
+</lookup>

@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<dir table="crmdmquyen" code="ma_dvcs, ma_quyen" order="ma_dvcs, ma_quyen" database="Sys" xmlns="urn:schemas-Sthink-company:data-dir">
+  <title v="quyền chức năng" e="Task Access Control"></title>
+  <fields>
+	  <field name="ma_dvcs" isPrimaryKey="true" hidden="true" readOnly="true">
+		  <header v="" e=""></header>
+	  </field>
+    <field name="ma_quyen" isPrimaryKey="true" hidden="true" readOnly="true" dataFormatString="@upperCaseFormat">
+      <header v="" e=""></header>
+      <footer v="&lt;div id=&quot;treeviewPanel&quot; style=&quot;width: 542px; height: 480px;&quot; &gt;&lt;/div&gt;" e="&lt;div id=&quot;treeviewPanel&quot; style=&quot;width: 542px; height: 480px;&quot; &gt;&lt;/div&gt;"></footer>
+      <items style="Mask"></items>
+    </field>
+    <field name="flag" external="true" defaultValue="0" allowContain="true" hidden="true" readOnly="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="r1" external="true" defaultValue="''" allowContain="true" hidden="true" readOnly="true" filterSource="Encoding">
+      <header v="" e=""></header>
+    </field>
+    <field name="r2" external="true" defaultValue="''" allowContain="true" hidden="true" readOnly="true" filterSource="Encoding">
+      <header v="" e=""></header>
+    </field>
+    <field name="r3" external="true" defaultValue="''" allowContain="true" hidden="true" readOnly="true" filterSource="Encoding">
+      <header v="" e=""></header>
+    </field>
+    <field name="r4" external="true" defaultValue="''" allowContain="true" hidden="true" readOnly="true" filterSource="Encoding">
+      <header v="" e=""></header>
+    </field>
+    <field name="r5" external="true" defaultValue="''" allowContain="true" hidden="true" readOnly="true" filterSource="Encoding">
+      <header v="" e=""></header>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Dir">
+      <item value="120, 100, 100, 100, 130, 0, 0, 0, 0, 0"/>
+      <item value="10000111: [ma_quyen].Desciption, [ma_quyen], [flag], [ma_dvcs]"/>
+      <item value="11111: [r1], [r2], [r3], [r4], [r5]"/>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Loading">
+      <text>
+        <![CDATA[
+declare @message varchar(8000)
+select @message = 'this._right = ''' + @ma_quyen + ''';this._unit = ''' + @ma_dvcs + ''';loadForm(this);'
+select @message as message
+return
+]]>
+      </text>
+    </command>
+    <command event="Closing">
+      <text>
+        <![CDATA[
+select 'closeForm(this)' as message
+return
+]]>
+      </text>
+    </command>
+    <command event="Checking">
+      <text>
+        <![CDATA[
+var a = ['r1', 'r2', 'r3', 'r4', 'r5'], v = this._treeView.getAllCheckedBranches(), l = 0;
+for (var i = 0; i < a.length; i++) {
+  l = i*3999;
+  this.getItem(a[i]).value = v.substring(l, l + 3999);
+}
+]]>
+      </text>
+    </command>
+    <command event="Updating">
+      <text>
+        <![CDATA[
+select @$r1 = replace(@$r1, ',', char(255)), @$r2 = replace(@$r2, ',', char(255)), @$r3 = replace(@$r3, ',', char(255)), @$r4 = replace(@$r4, ',', char(255)), @$r5 = replace(@$r5, ',', char(255))
+if not exists(select 1 from crmrightinfo9 where ma_quyen = @ma_quyen and ma_dvcs = @ma_dvcs) insert into crmrightinfo9(ma_dvcs, ma_quyen, r1, r2, r3, r4, r5) values(@ma_dvcs, @ma_quyen, @$r1, @$r2, @$r3, @$r4, @$r5)
+else update crmrightinfo9 set r1 = @$r1, r2 = @$r2, r3 = @$r3, r4 = @$r4, r5 = @$r5 where ma_quyen = @ma_quyen and ma_dvcs = @ma_dvcs
+select '' as message, 'crmAccessRight.crmAccessRight.Process.UpdateTabRight(' + rtrim(@ma_quyen) + ', ' + rtrim(@ma_dvcs) + ')' as invoke
+/*
+]]>
+      </text>
+    </command>
+
+    <command event="Updated">
+      <text>
+        <![CDATA[*/
+]]>
+      </text>
+    </command>
+  </commands>
+
+  <script>
+    <text>
+      <![CDATA[
+function loadForm(f) {
+  $func.enableButtons(false);
+  $func.showWait(f.get_id());
+  
+  var xmlhttp;
+  if (window.XMLHttpRequest) xmlhttp = new XMLHttpRequest();
+  else {
+    try {xmlhttp = new ActiveXObject('Msxml2.XMLHTTP');}
+      catch (ex) {xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');}
+  }
+  xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+      f._treeView = new TreeView('treeviewPanel', '100%', '100%', 0);
+      f._treeView.set_path('../Images/Tree/');
+      f._treeView.enableCheckBoxes(true);
+      f._treeView.loadXMLString(xmlhttp.responseText);
+      
+      $func.hideWait(f.get_id());
+      $func.enableButtons(true);
+    }
+  }
+  xmlhttp.open('GET', '~/AppHandler/crmAccessRight.ashx?type=1&rid=' + f._right + '&unit=' + f._unit;
+  xmlhttp.send(null);
+	f.getItem('flag').value = 1;
+}
+function closeForm(f) {f._treeView.dispose();}
+]]>
+    </text>
+  </script>
+
+
+</dir>

@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<grid table="crmdmquyen" code="ma_quyen" order="ma_quyen" filter="ma_dvcs = @@unit" database="Sys" xmlns="urn:schemas-Sthink-company:data-grid">
+  <title v="Khai báo quyền sử dụng" e="Access Right List"></title>
+  <subTitle v="Cập nhật quyền sử dụng: thêm, sửa, xóa..." e="Add, Edit, Delete Access Right..."></subTitle>
+
+  <fields>
+    <field name="ma_quyen" isPrimaryKey="true" width="100" allowSorting="true" allowFilter="true">
+      <header v="Mã quyền" e="Access Right"></header>
+    </field>
+    <field name="ten_quyen%l" width="300" allowSorting="true" allowFilter="true">
+      <header v="Tên quyền" e="Description"></header>
+    </field>
+    <field name="loai_quyen" width="80" allowSorting="true" allowFilter="true">
+      <header v="Loại" e="Type"></header>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Grid">
+      <field name="ma_quyen"/>
+      <field name="ten_quyen%l"/>
+      <field name="loai_quyen"/>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Loading">
+      <text>
+        <![CDATA[
+declare @message nvarchar(4000)
+select @message = ''
+if @@admin <> 1 begin
+  select @message = 'this._denyNew = true;this._denyDelete = true;'
+end
+select @message as message
+return
+]]>
+      </text>
+    </command>
+  </commands>
+</grid>

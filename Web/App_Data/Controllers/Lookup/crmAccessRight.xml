@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<lookup table="crmdmquyen" code="ma_quyen" name="ten_quyen%l" order="ma_quyen" filter="ma_dvcs = @@unit" database="Sys" xmlns="urn:schemas-Sthink-company:data-lookup">
+  <header v="Danh mục quyền sử dụng" e="Access Right List"></header>
+  <fields>
+    <field name="ma_quyen" allowSorting="true" allowFilter="true">
+      <header v="Mã quyền sử dụng" e="Access Right"></header>
+    </field>
+    <field name="ten_quyen%l" allowSorting="true" allowFilter="true">
+      <header v="Tên quyền sử dụng" e="Description"></header>
+    </field>
+  </fields>
+</lookup>

@@ -1,0 +1,485 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE report [
+  <!ENTITY b SYSTEM ".\Include\BaseCurrency.xml">
+  <!ENTITY f SYSTEM ".\Include\ForeignCurrency.xml">
+  <!ENTITY s SYSTEM ".\Include\Separate.xml">
+
+  <!ENTITY p "../images/pdf.gif">
+  <!ENTITY e "../images/excel.gif">
+  <!ENTITY bi "../images/bilingual.png">
+
+  <!ENTITY GLTranReport SYSTEM ".\Include\GLTranReportBI.xml">
+  <!ENTITY GLTranReportSql SYSTEM ".\Include\GLTranReportSql.txt">
+]>
+
+<report xmlns="urn:schemas-Sthink-company:data-report">
+  <query>
+    <text>
+      <![CDATA[
+if dbo.FastBusiness$Function$CheckSQLInjection(@stt_rec) = 0 return
+]]>&GLTranReportSql;<![CDATA[
+else begin
+	declare @m_ma_nt0 varchar(10), @dv_tien nvarchar(16), @key nvarchar(128), @bilingual tinyint, @l char(1)
+  if @@form in ('011', '021', '031', '041', '051', '061') select @bilingual = 1, @l = 'V' else select @bilingual = 0, @l = @@language
+	select @dv_tien = ra_2 from dmnt where ma_nt = @m_ma_nt0
+
+	if @@form in('050', '060', '070', '080', '088', '150', '160', '051', '061') begin
+    declare @h_line1 as nvarchar(128), @h_line2 as nvarchar(128), @h_line3 as nvarchar(128), @h_line4 as nvarchar(128)
+    if @bilingual = 0 begin
+      select @h_line1 = case when @@language = 'V' then cname else cname2 end from reports where ccode = 'DEC005'
+      select @h_line2 = case when @@language = 'V' then cname else cname2 end from reports where ccode = 'DEC006'
+      select @h_line3 = case when @@language = 'V' then cname else cname2 end from reports where ccode = 'DEC007'
+      select @h_line4 = case when @@language = 'V' then cname else cname2 end from reports where ccode = 'DEC008'
+    end
+
+		select rtrim(a.ong_ba) as ong_ba,rtrim(b.ten_kh) as ten_kh ,rtrim(b.ten_kh2) as ten_kh2, a.dia_chi, a.dien_giai, a.t_tt, a.t_tt_nt, a.ma_nt,
+			  dbo.FastBusiness$Function$System$ReadCurrency(@m_ma_nt0, a.t_tt, @l) as t_tt_in_word,
+		    dbo.FastBusiness$Function$System$ReadCurrency(a.ma_nt, a.t_tt_nt, @l) as t_tt_nt_in_word,
+        dbo.FastBusiness$Function$System$ReadCurrency(@m_ma_nt0, a.t_tt, 'E') as t_tt_in_word2,
+		    dbo.FastBusiness$Function$System$ReadCurrency(a.ma_nt, a.t_tt_nt, 'E') as t_tt_nt_in_word2,
+		    a.so_ct_goc as so_ct_goc, a.dien_giai_ct_goc, a.ma_nk, a.so_ct, a.tk, a.ty_gia,
+		    replace(str(day(ngay_ct),2),' ','0') ngay, replace(str(month(ngay_ct),2),' ','0') thang, str(year(ngay_ct),4) nam, stt_rec,
+        @h_line1 as h_line1, @h_line2 as h_line2, @h_line3 as h_line3, @h_line4 as h_line4
+	    from @@prime$partition$current a with(nolock)
+		    left join dmkh b with(nolock) on a.ma_kh = b.ma_kh
+	    where stt_rec = @stt_rec
+
+			declare @strSQL nvarchar(4000)
+			set @strSQL = 'select a.tk_no, sum(a.tien) as tien, sum(a.tien_nt) as tien_nt'
+			set @strSQL = @strSQL + ' from (select 0 as l1, line_nbr, tk_no, tt - thue as tien, tt_nt - thue_nt as tien_nt from ' + dbo.ff30_DTable('d56$$partition$current') + ' a with(nolock) where stt_rec = ''' + @stt_rec + ''''
+			set @strSQL = @strSQL + char(13) + 'union all'
+			set @strSQL = @strSQL + char(13) + 'select 1, line_nbr, tk_thue_no, t_thue, t_thue_nt from r30$$partition$current a with(nolock) where stt_rec = ''' + @stt_rec + ''''
+			set @strSQL = @strSQL + ' ) a'
+			set @strSQL = @strSQL + ' group by a.tk_no order by min(a.l1), min(a.line_nbr)'
+			exec sp_executesql @strSQL
+	end else begin
+		if @@form in('030', '040', '130', '140', '031', '041') begin
+    select @m_ma_nt0 = val from options where name = N'm_ma_nt0'
+    select rtrim(a.ong_ba) as ong_ba,rtrim(b.ten_kh) as ten_kh ,rtrim(b.ten_kh2) as ten_kh2, a.dia_chi, a.dien_giai, a.t_tt, a.t_tt_nt, a.ma_nt, 
+		    dbo.FastBusiness$Function$System$ReadCurrency(@m_ma_nt0, a.t_tt, @l) as t_tt_in_word, 
+		    dbo.FastBusiness$Function$System$ReadCurrency(a.ma_nt, a.t_tt_nt, @l) as t_tt_nt_in_word,
+        dbo.FastBusiness$Function$System$ReadCurrency(@m_ma_nt0, a.t_tt, 'E') as t_tt_in_word2, 
+		    dbo.FastBusiness$Function$System$ReadCurrency(a.ma_nt, a.t_tt_nt, 'E') as t_tt_nt_in_word2,
+		    a.so_ct_goc as so_ct_goc, a.dien_giai_ct_goc, a.ma_nk, a.so_ct, a.tk, a.ty_gia,
+		    replace(str(day(ngay_ct),2),' ','0') ngay, replace(str(month(ngay_ct),2),' ','0') thang, str(year(ngay_ct),4) nam, stt_rec
+	    from @@prime$partition$current a with(nolock)
+		    left join dmkh b with(nolock) on a.ma_kh = b.ma_kh
+	    where stt_rec = @stt_rec
+		  select @key = 'a.stt_rec = ''' + @stt_rec + ''''
+			exec rs_PrintCDTran2 @@language, @key, 'd56$$partition$current', 'r30$$partition$current', @@id
+			return
+		end
+   select a.ma_kh, a.dien_giai, ltrim(a.so_ct) as so_ct, a.ty_gia,
+	    a.t_tt, a.t_tt_nt, isnull(b.ten_nh,'') as tennh, isnull(b.ten_nh2,'') as tennh2,
+	    isnull(b.tknh,'') as tknh, isnull(b.tinh_thanh,'') as tinhthanh, a.ma_nt, N'1' as lien,
+		  isnull(c.ten_kh, '') as ten_kh, isnull(c.tk_nh,'') as tk_nh, isnull(c.ngan_hang,'') as ngan_hang, isnull(c.tinh_thanh,'') as tinh_thanh,
+	    dbo.FastBusiness$Function$System$ReadCurrency(@m_ma_nt0, a.t_tt, @l) as t_tt_in_word,
+	    dbo.FastBusiness$Function$System$ReadCurrency(a.ma_nt, a.t_tt_nt, @l) as t_tt_nt_in_word,
+      dbo.FastBusiness$Function$System$ReadCurrency(@m_ma_nt0, a.t_tt, 'E') as t_tt_in_word2,
+	    dbo.FastBusiness$Function$System$ReadCurrency(a.ma_nt, a.t_tt_nt, 'E') as t_tt_nt_in_word2,
+	    replace(str(day(ngay_ct),2),' ','0') ngay, replace(str(month(ngay_ct),2),' ','0') thang, cast(year(ngay_ct) as char(4)) nam, k.ten_cty as ten_dvcs, k.dc_cty as dc
+    from @@prime$partition$current a with(nolock)
+	    left join zcdmtknh b with(nolock) on a.tk = b.tk and a.ma_dvcs = b.ma_dvcs
+		left join p56 c with(nolock) on a.stt_rec = c.stt_rec
+		left join dmdvcskb k with(nolock) on a.ma_dvcs = k.ma_dvcs
+    where a.stt_rec = @stt_rec
+	end
+  
+  select cast(null as image) as logo
+		, case when @@form = '270' or @@form = '271' then 'ACB.png'
+					when @@form = '272' or @@form = '273' then 'SHB.png'
+					when @@form = '274' or @@form = '275' then 'BIDV.png'
+					when @@form = '276' or @@form = '277' then 'Vietcombank.png'
+					when @@form = '278' or @@form = '279' then 'Vietinbank.png'
+					when @@form = '280' or @@form = '281' then 'EximBank.png'
+					when @@form = '282' or @@form = '283' then 'MB.png'
+					when @@form = '284' or @@form = '285' then 'Techcombank.png'
+					when @@form = '286' or @@form = '287' then 'Agribank.png'
+					when @@form = '288' or @@form = '289' then 'Sacombank.png'
+					when @@form = '290' or @@form = '291' then 'DongA.png' else 'logo.png' end as file_name
+end
+]]>
+    </text>
+  </query>
+
+  <forms>
+    <form id="010" reportFile="CPTran_01" templateFile="" commandArgument="Pdf" urlImage="&p;">
+      <header v="Giấy báo nợ" e="Payment"></header>
+      <download>
+        <header  v="Giấy báo nợ" e="Payment"/>
+      </download>&b;
+    </form>
+    <form id="020" reportFile="CPTran_01" templateFile="" commandArgument="Pdf">
+      <header v="Giấy báo nợ tiền ngoại tệ" e="Payment in Foreign Currency"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ" e="Payment in Foreign Currency"/>
+      </download>&f;
+    </form>
+    <form id="030" reportFile="CPTran_02" templateFile="" commandArgument="Pdf" controller="CDTRan" externalID="050">
+      <header v="Giấy báo nợ cho nhiều khách hàng" e="Bank Debit Advice for Many Customers"/>
+      <download>
+        <header v="Giấy báo nợ cho nhiều khách hàng" e="Bank Debit Advice for Many Customers"/>
+      </download>&b;
+    </form>
+    <form id="040" reportFile="CPTran_02" templateFile="" commandArgument="Pdf" controller="CDTRan" externalID="060">
+      <header v="Giấy báo nợ cho nhiều khách hàng tiền ngoại tệ" e="Bank Debit Advice for Many Customers in Foreign Currency"/>
+      <download>
+        <header v="Giấy báo nợ cho nhiều khách hàng tiền ngoại tệ" e="Bank Debit Advice for Many Customers in Foreign Currency"/>
+      </download>&f;
+    </form>
+
+    &s;
+    
+    <form id="270" reportFile="CPTran_ACB" templateFile="" commandArgument="Pdf" urlImage="&p;" languageType="0">
+      <header v="Giấy báo nợ - ACB" e="Payment - ACB"></header>
+      <download>
+        <header  v="Giấy báo nợ - ACB" e="Payment - ACB"/>
+      </download>&b;
+    </form>
+    <form id="271" reportFile="CPTran_ACB" templateFile="" commandArgument="Pdf" languageType="0">
+      <header v="Giấy báo nợ tiền ngoại tệ - ACB" e="Payment in Foreign Currency - ACB"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ - ACB" e="Payment in Foreign Currency - ACB"/>
+      </download>&f;
+    </form>
+    <form id="272" reportFile="CPTran_SHB" templateFile="" commandArgument="Pdf" urlImage="&p;" languageType="0">
+      <header v="Giấy báo nợ - SHB" e="Payment - SHB"></header>
+      <download>
+        <header  v="Giấy báo nợ - SHB" e="Payment - SHB"/>
+      </download>&b;
+    </form>
+    <form id="273" reportFile="CPTran_SHB" templateFile="" commandArgument="Pdf" languageType="0">
+      <header v="Giấy báo nợ tiền ngoại tệ - SHB" e="Payment in Foreign Currency - SHB"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ - SHB" e="Payment in Foreign Currency - SHB"/>
+      </download>&f;
+    </form>
+    <form id="274" reportFile="CPTran_BIDV" templateFile="" commandArgument="Pdf" urlImage="&p;" languageType="0">
+      <header v="Giấy báo nợ - BIDV" e="Payment - BIDV"></header>
+      <download>
+        <header  v="Giấy báo nợ - BIDV" e="Payment - BIDV"/>
+      </download>&b;
+    </form>
+    <form id="275" reportFile="CPTran_BIDV" templateFile="" commandArgument="Pdf" languageType="0">
+      <header v="Giấy báo nợ tiền ngoại tệ - BIDV" e="Payment in Foreign Currency - BIDV"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ - BIDV" e="Payment in Foreign Currency - BIDV"/>
+      </download>&f;
+    </form>
+    <form id="276" reportFile="CPTran_Vietcombank" templateFile="" commandArgument="Pdf" urlImage="&p;" languageType="0">
+      <header v="Giấy báo nợ - Vietcombank" e="Payment - Vietcombank"></header>
+      <download>
+        <header  v="Giấy báo nợ - Vietcombank" e="Payment - Vietcombank"/>
+      </download>&b;
+    </form>
+	<form id="300" reportFile="CPTran_Vietcombank_A5" templateFile="" commandArgument="Pdf" urlImage="&p;" languageType="0">
+      <header v="Giấy báo nợ - Vietcombank in khay giấy A5" e="Payment - Vietcombank"></header>
+      <download>
+        <header  v="Giấy báo nợ - Vietcombank" e="Payment - Vietcombank"/>
+      </download>&b;
+    </form>
+    <form id="277" reportFile="CPTran_Vietcombank" templateFile="" commandArgument="Pdf" languageType="0">
+      <header v="Giấy báo nợ tiền ngoại tệ - Vietcombank" e="Payment in Foreign Currency - Vietcombank"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ - Vietcombank" e="Payment in Foreign Currency - Vietcombank"/>
+      </download>&f;
+    </form>
+    <form id="278" reportFile="CPTran_Vietinbank" templateFile="" commandArgument="Pdf" urlImage="&p;" languageType="0">
+      <header v="Giấy báo nợ - Vietinbank" e="Payment - Vietinbank"></header>
+      <download>
+        <header  v="Giấy báo nợ - Vietinbank" e="Payment - Vietinbank"/>
+      </download>&b;
+    </form>
+    <form id="279" reportFile="CPTran_Vietinbank" templateFile="" commandArgument="Pdf" languageType="0">
+      <header v="Giấy báo nợ tiền ngoại tệ - Vietinbank" e="Payment in Foreign Currency - Vietinbank"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ - Vietinbank" e="Payment in Foreign Currency - Vietinbank"/>
+      </download>&f;
+    </form>
+    <form id="280" reportFile="CPTran_Eximbank" templateFile="" commandArgument="Pdf" urlImage="&p;" languageType="0">
+      <header v="Giấy báo nợ - Eximbank" e="Payment - Eximbank"></header>
+      <download>
+        <header  v="Giấy báo nợ - Eximbank" e="Payment - Eximbank"/>
+      </download>&b;
+    </form>
+    <form id="281" reportFile="CPTran_Eximbank" templateFile="" commandArgument="Pdf" languageType="0">
+      <header v="Giấy báo nợ tiền ngoại tệ - Eximbank" e="Payment in Foreign Currency - Eximbank"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ - Eximbank" e="Payment in Foreign Currency - Eximbank"/>
+      </download>&f;
+    </form>
+    <form id="282" reportFile="CPTran_MB" templateFile="" commandArgument="Pdf" urlImage="&p;" languageType="0">
+      <header v="Giấy báo nợ - MB" e="Payment - MB"></header>
+      <download>
+        <header  v="Giấy báo nợ - MB" e="Payment - MB"/>
+      </download>&b;
+    </form>
+    <form id="283" reportFile="CPTran_MB" templateFile="" commandArgument="Pdf" languageType="0">
+      <header v="Giấy báo nợ tiền ngoại tệ - MB" e="Payment in Foreign Currency - MB"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ - MB" e="Payment in Foreign Currency - MB"/>
+      </download>&f;
+    </form>
+    <form id="284" reportFile="CPTran_Techcombank" templateFile="" commandArgument="Pdf" urlImage="&p;" languageType="0">
+      <header v="Giấy báo nợ - Techcombank" e="Payment - Techcombank"></header>
+      <download>
+        <header  v="Giấy báo nợ - Techcombank" e="Payment - Techcombank"/>
+      </download>&b;
+    </form>
+    <form id="285" reportFile="CPTran_Techcombank" templateFile="" commandArgument="Pdf" languageType="0">
+      <header v="Giấy báo nợ tiền ngoại tệ - Techcombank" e="Payment in Foreign Currency - Techcombank"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ - Techcombank" e="Payment in Foreign Currency - Techcombank"/>
+      </download>&f;
+    </form>
+    <form id="286" reportFile="CPTran_Agribank" templateFile="" commandArgument="Pdf" urlImage="&p;" languageType="0">
+      <header v="Giấy báo nợ - Agribank" e="Payment - Agribank"></header>
+      <download>
+        <header  v="Giấy báo nợ - Agribank" e="Payment - Agribank"/>
+      </download>&b;
+    </form>
+    <form id="287" reportFile="CPTran_Agribank" templateFile="" commandArgument="Pdf" languageType="0">
+      <header v="Giấy báo nợ tiền ngoại tệ - Agribank" e="Payment in Foreign Currency - Agribank"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ - Agribank" e="Payment in Foreign Currency - Agribank"/>
+      </download>&f;
+    </form>
+    <form id="288" reportFile="CPTran_Sacombank" templateFile="" commandArgument="Pdf" urlImage="&p;" languageType="0">
+      <header v="Giấy báo nợ - Sacombank" e="Payment - Sacombank"></header>
+      <download>
+        <header  v="Giấy báo nợ - Sacombank" e="Payment - Sacombank"/>
+      </download>&b;
+    </form>
+    <form id="289" reportFile="CPTran_Sacombank" templateFile="" commandArgument="Pdf" languageType="0">
+      <header v="Giấy báo nợ tiền ngoại tệ - Sacombank" e="Payment in Foreign Currency - Sacombank"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ - Sacombank" e="Payment in Foreign Currency - Sacombank"/>
+      </download>&f;
+    </form>
+    <form id="290" reportFile="CPTran_DongA" templateFile="" commandArgument="Pdf" urlImage="&p;" languageType="0">
+      <header v="Giấy báo nợ - DongA" e="Payment - DongA"></header>
+      <download>
+        <header  v="Giấy báo nợ - DongA" e="Payment - DongA"/>
+      </download>&b;
+    </form>
+    <form id="291" reportFile="CPTran_DongA" templateFile="" commandArgument="Pdf" languageType="0">
+      <header v="Giấy báo nợ tiền ngoại tệ - DongA" e="Payment in Foreign Currency - DongA"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ - DongA" e="Payment in Foreign Currency - DongA"/>
+      </download>&f;
+    </form>
+
+    &s;
+ 
+    <form id="011" reportFile="CPTran_01BI" templateFile="" commandArgument="Pdf" languageType="0" urlImage="&bi;">
+      <header v="Giấy báo nợ dạng song ngữ" e="Payment - Bilingual Form"></header>
+      <download>
+        <header  v="Giấy báo nợ dạng song ngữ" e="Payment - Bilingual Form"/>
+      </download>
+      <fields>
+        <field name="isFC" type="Boolean">
+          <header v="False" e="False"/>
+        </field>
+        <field name="h_ghi_so" type="String">
+          <header v="Ghi sổ ngày" e="Recorded Date"></header>
+        </field>
+        <field name="h_ghi_so2" type="String">
+          <header v="............................................. " e="............................................. "></header>
+        </field>
+      </fields>
+    </form>
+    <form id="021" reportFile="CPTran_01BI" templateFile="" commandArgument="Pdf" languageType="0">
+      <header v="Giấy báo nợ tiền ngoại tệ dạng song ngữ" e="Payment in Foreign Currency - Bilingual Form"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ dạng song ngữ" e="Payment in Foreign Currency - Bilingual Form"/>
+      </download>
+      <fields>
+        <field name="isFC" type="Boolean">
+          <header v="True" e="True"/>
+        </field>
+        <field name="h_ghi_so" type="String">
+          <header v="Ghi sổ ngày" e="Recorded Date"></header>
+        </field>
+        <field name="h_ghi_so2" type="String">
+          <header v="............................................. " e="............................................. "></header>
+        </field>
+      </fields>
+    </form>
+    <form id="031" reportFile="CPTran_02BI" templateFile="" commandArgument="Pdf" controller="CDTRan" externalID="051" languageType="0">
+      <header v="Giấy báo nợ cho nhiều khách hàng dạng song ngữ" e="Bank Debit Advice for Many Customers - Bilingual Form"/>
+      <download>
+        <header v="Giấy báo nợ cho nhiều khách hàng dạng song ngữ" e="Bank Debit Advice for Many Customers - Bilingual Form"/>
+      </download>&b;
+    </form>
+    <form id="041" reportFile="CPTran_02BI" templateFile="" commandArgument="Pdf" controller="CDTRan" externalID="061" languageType="0">
+      <header v="Giấy báo nợ cho nhiều khách hàng tiền ngoại tệ dạng song ngữ" e="Bank Debit Advice for Many Customers in Foreign Currency - Bilingual Form"/>
+      <download>
+        <header v="Giấy báo nợ cho nhiều khách hàng tiền ngoại tệ dạng song ngữ" e="Bank Debit Advice for Many Customers in Foreign Currency - Bilingual Form"/>
+      </download>&f;
+    </form>
+
+    &s;
+
+    <form id="110" reportFile="" templateFile="CPTran" commandArgument="Excel" urlImage="&e;">
+      <header v="Giấy báo nợ dạng tệp xlsx &lt;span style=&quot;color:#42842C;&quot;/&gt;(Excel)&lt;/span&gt;" e="Payment as Spreadsheet"></header>
+      <download>
+        <header  v="Giấy báo nợ" e="Payment"/>
+      </download>&b;
+    </form>
+    <form id="120" reportFile="" templateFile="CPTranFC" commandArgument="Excel">
+      <header v="Giấy báo nợ tiền ngoại tệ" e="Payment in Foreign Currency"/>
+      <download>
+        <header  v="Giấy báo nợ tiền ngoại tệ" e="Payment in Foreign Currency"/>
+      </download>&f;
+    </form>
+    <form id="130" reportFile="" templateFile="CPTran_02" commandArgument="Excel" controller="CDTRan" externalID="130">
+      <header v="Giấy báo nợ cho nhiều khách hàng" e="Bank Debit Advice for Many Customers"/>
+      <download>
+        <header v="Giấy báo nợ cho nhiều khách hàng" e="Bank Debit Advice for Many Customers"/>
+      </download>&b;
+    </form>
+    <form id="140" reportFile="" templateFile="CPTran_02FC" commandArgument="Excel" controller="CDTRan" externalID="140">
+      <header v="Giấy báo nợ cho nhiều khách hàng tiền ngoại tệ" e="Bank Debit Advice for Many Customers in Foreign Currency"/>
+      <download>
+        <header v="Giấy báo nợ cho nhiều khách hàng tiền ngoại tệ" e="Bank Debit Advice for Many Customers in Foreign Currency"/>
+      </download>&f;
+    </form>
+
+    &s;
+
+    <form id="050" reportFile="CDTRan_01" templateFile="" commandArgument="Pdf" urlImage="&p;" controller="CDTRan" externalID="010">
+      <header v="Phiếu chi tiền mặt" e="Cash Disbursement"></header>
+      <download>
+        <header v="Phiếu chi tiền mặt" e="Cash Disbursement"/>
+      </download>
+    </form>
+	
+	<form id="088" reportFile="CDTRan_01_baono" templateFile="" commandArgument="Pdf" urlImage="&p;" controller="CDTRan" externalID="070">
+      <header v="Giấy báo nợ 2" e="Cash Disbursement"></header>
+      <download>
+        <header v="Giấy báo nợ 2" e="Cash Disbursement"/>
+      </download>
+    </form>
+	
+    <form id="060" reportFile="CDTRan_01" templateFile="" commandArgument="Pdf" controller="CDTRan" externalID="020">
+      <header v="Phiếu chi tiền mặt tiền ngoại tệ" e="Cash Disbursement in Foreign Currency"/>
+      <download>
+        <header v="Phiếu chi tiền mặt tiền ngoại tệ" e="Cash Disbursement in Foreign Currency"/>
+      </download>&f;
+    </form>
+    <form id="051" reportFile="CDTRan_01BI" templateFile="" commandArgument="Pdf" urlImage="&bi;" controller="CDTRan" externalID="011" languageType="0">
+      <header v="Phiếu chi tiền mặt dạng song ngữ" e="Cash Disbursement - Bilingual Form"></header>
+      <download>
+        <header v="Phiếu chi tiền mặt dạng song ngữ" e="Cash Disbursement - Bilingual Form"/>
+      </download>
+    </form>
+    <form id="061" reportFile="CDTRan_01BI" templateFile="" commandArgument="Pdf" controller="CDTRan" externalID="021" languageType="0">
+      <header v="Phiếu chi tiền mặt tiền ngoại tệ dạng song ngữ" e="Cash Disbursement in Foreign Currency - Bilingual Form"/>
+      <download>
+        <header v="Phiếu chi tiền mặt tiền ngoại tệ dạng song ngữ" e="Cash Disbursement in Foreign Currency - Bilingual Form"/>
+      </download>&f;
+    </form>
+
+    &s;
+
+    <form id="070" reportFile="CDTran_03" templateFile="" commandArgument="Pdf" urlImage="&p;" controller="CDTRan" externalID="030">
+      <header v="Phiếu chi tiền mặt in 2 liên" e="Cash Disbursement - 2 Copies Per Sheet"/>
+      <download>
+        <header v="Phiếu chi tiền mặt" e="Cash Disbursement"/>
+      </download>&b;
+    </form>
+
+    <form id="080" reportFile="CDTran_03" templateFile="" commandArgument="Pdf" controller="CDTRan" externalID="040">
+      <header v="Phiếu chi tiền mặt tiền ngoại tệ in 2 liên" e="Cash Disbursement in Foreign Currency - 2 Copies Per Sheet"/>
+      <download>
+        <header v="Phiếu chi tiền mặt tiền ngoại tệ" e="Cash Disbursement in Foreign Currency"/>
+      </download>&f;
+    </form>
+
+    &s;
+
+    <form id="150" reportFile="" templateFile="CDTran" commandArgument="Excel" urlImage="&e;" controller="CDTRan" externalID="110">
+      <header v="Phiếu chi tiền mặt dạng tệp xlsx &lt;span style=&quot;color:#42842C;&quot;/&gt;(Excel)&lt;/span&gt;" e="Cash Disbursement as Spreadsheet"></header>
+      <download>
+        <header  v="Phiếu chi tiền mặt" e="Cash Disbursement"/>
+      </download>&b;
+    </form>
+    <form id="160" reportFile="" templateFile="CDTranFC" commandArgument="Excel" controller="CDTRan" externalID="120">
+      <header v="Phiếu chi tiền mặt tiền ngoại tệ" e="Cash Disbursement in Foreign Currency"/>
+      <download>
+        <header  v="Phiếu chi tiền mặt tiền ngoại tệ" e="Cash Disbursement in Foreign Currency"/>
+      </download>&f;
+    </form>
+    &s;
+
+    &GLTranReport;
+  </forms>
+
+  
+  <fields>
+    <field name="title" type="String">
+      <header v="ỦY NHIỆM CHI" e="PAYMENT"/>
+    </field>
+    <field name="h_so_ct" type="String">
+      <header v="Số: " e="Number:"></header>
+    </field>
+    <field name="h_mau_so" type="String">
+      <header v="Mẫu số: 01" e="Form: 01"></header>
+    </field>
+    <field name="h_tien_bang_so" type="String">
+      <header v="Số tiền bằng số" e="Amount (in Figure)"></header>
+    </field>
+    <field name="h_lien" type="String">
+      <header v="Liên: 01" e="Copy: 01"></header>
+    </field>
+    <field name="h_dv_nhan" type="String">
+      <header v="Đơn vị nhận tiền:" e="Customer:"></header>
+    </field>
+    <field name="h_so_tk" type="String">
+      <header v="Số tài khoản:" e="Account No.:"></header>
+    </field>
+    <field name="h_nh_ghi" type="String">
+      <header v="PHẦN DO NH GHI" e="FOR BANK"></header>
+    </field>
+    <field name="h_tk_co" type="String">
+      <header v="TÀI KHOẢN CÓ" e="CREDIT ACCOUNT"></header>
+    </field>
+    <field name="h_tk_no" type="String">
+      <header v="TÀI KHOẢN NỢ" e="DEBIT ACCOUNT"></header>
+    </field>
+    <field name="h_ngan_hang" type="String">
+      <header v="Tại ngân hàng:" e="Bank:"></header>
+    </field>
+    <field name="h_ngan_hang_a" type="String">
+      <header v="NGÂN HÀNG A" e="A BANK"></header>
+    </field>
+    <field name="h_ngan_hang_b" type="String">
+      <header v="NGÂN HÀNG B" e="B BANK"></header>
+    </field>
+    <field name="h_dv_tra_tien" type="String">
+      <header v="ĐƠN VỊ TRẢ TIỀN" e="COMPANY"></header>
+    </field>
+    <field name="h_ten_dv_tra_tien" type="String">
+      <header v="Tên đơn vị trả tiền:" e="Company:"></header>
+    </field>
+    <field name="h_ten_dv_nhan_tien" type="String">
+      <header v="Tên đơn vị nhận tiền:" e="Receiver:"></header>
+    </field>
+    <field name="h_tinh_tp" type="String">
+      <header v="Tỉnh, tp:" e="City:"></header>
+    </field>
+    <field name="h_dien_giai" type="String">
+      <header v="Nội dung thanh toán:" e="Memo:"></header>
+    </field>
+    <field name="h_ghi_so" type="String">
+      <header v="Ghi sổ ngày............................................. " e="Recorded Date............................................. "></header>
+    </field>
+    <field name="h_bang_chu" type="String">
+      <header v="Số tiền (viết bằng chữ): " e="Amount (in Words):"></header>
+    </field>
+    <field name="h_kt" type="String">
+      <header v="KẾ TOÁN" e="ACCOUNTANT"/>
+    </field>
+  </fields>
+</report>

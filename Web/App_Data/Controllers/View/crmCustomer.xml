@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<!DOCTYPE view [
+  <!ENTITY EmployeeName "ho_nv + space(1) + ten_nv">
+]>
+
+<view table="dmkh" code="ma_kh" xmlns="urn:schemas-Sthink-company:data-view">
+  <fields>	  
+	  <field name="ma_kh" isPrimaryKey="true" dataFormatString="@upperCaseFormat" clientDefault="Default" allowNulls="false">
+		  <header v="Mã khách" e="Customer ID"></header>
+	  </field>
+	  <field name="ten_kh" allowNulls="false">
+		  <header v="Tên khách hàng" e="Customer Name"></header>
+	  </field>
+	  <field name="ten_kh2">
+		  <header v="Tên khác" e="Other Name"></header>
+	  </field>
+	  <field name="dia_chi">
+		  <header v="Địa chỉ" e="Address"></header>
+	  </field>
+	  <field name="ma_so_thue" dataFormatString="@upperCaseFormat">
+		  <header v="Mã số thuế" e="Tax Code"></header>
+		  <items style="Mask"/>
+	  </field>
+	  <field name="doi_tac">
+		  <header v="Đối tác" e="Partner"></header>
+	  </field>
+	  <field name="ma_nvbh" reference="ten_nvbh%l" key="status = '1'" check="1=1" information="ma_nvbh$dmnvbh.ten_nvbh%l">
+		  <header v="Nv bán hàng" e="Sales Employee"></header>
+	  </field>
+	  <field name="ten_nvbh%l" readOnly="true" external="true" defaultValue="''" hidden="true">
+		  <header v="" e=""></header>
+	  </field>
+	  <field name="dien_thoai">
+		  <header v="Điện thoại" e="Phone Number"></header>
+	  </field>
+	  <field name="fax">
+		  <header v="Số gửi bản sao &lt;span class=&quot;LabelDescription&quot;&gt;(Fax)&lt;/span&gt;" e="Fax Number"></header>
+	  </field>
+	  <field name="e_mail">
+		  <header v="Thư &lt;span class=&quot;LabelDescription&quot;&gt;(Email)&lt;/span&gt;, trang chủ" e="Email and Home Page"></header>
+	  </field>
+	  <field name="home_page">
+		  <header v="" e=""></header>
+	  </field>
+	  <field name="ghi_chu" type="ntext">
+		  <header v="Ghi chú" e="Note"></header>
+	  </field>
+	  
+  </fields>
+
+  <views>
+    <view id="View">
+		<item value="120, 30, 45, 25, 65, 45, 30, 25, 65, 75, 25, 0"/>
+		<item value="1100-------: [ma_kh].Label, [ma_kh]"/>
+		<item value="11000000000: [ten_kh].Label, [ten_kh]"/>
+		<item value="11000000000: [ten_kh2].Label, [ten_kh2]"/>
+		<item value="11000000000: [dia_chi].Label, [dia_chi]"/>
+		<item value="1100: [ma_so_thue].Label, [ma_so_thue]"/>
+		<item value="11001010010: [doi_tac].Label, [doi_tac], [ma_nvbh].Label, [ma_nvbh], [ten_nvbh%l]"/>
+		<item value="1100--10010: [dien_thoai].Label, [dien_thoai], [fax].Label, [fax]"/>
+		<item value="11000010000: [e_mail].Label, [e_mail], [home_page]"/>
+		<item value="11000000000: [ghi_chu].Label, [ghi_chu]"/>
+    </view>
+  </views>
+
+  <queries>
+    <query event="Loading">
+      <text>
+        <![CDATA[
+select @@fieldExternal from @@table a where a.ma_dvcs = @@unit and @@whereClause 
+]]>
+      </text>
+    </query>
+  </queries>
+
+</view>

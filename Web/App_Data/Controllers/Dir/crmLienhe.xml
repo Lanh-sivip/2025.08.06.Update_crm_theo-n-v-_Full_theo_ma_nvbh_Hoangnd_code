@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE dir [
+	<!ENTITY XMLGridCommandExtension SYSTEM "..\Include\XML\CrmGridCommandExtension.xml">
+]>
+
+<dir table="crmlienhe" code="ma_dvcs, ma_kh, stt_rec0" order="stt_rec0" xmlns="urn:schemas-Sthink-company:data-dir">
+	<title v="Nhật ký công việc" e="Family Information"></title>
+
+	<fields>	
+		<field name="ma_kh" isPrimaryKey="true"  readOnly="true" allowNulls="false">
+			<header v="" e=""></header>
+		</field>
+		<field name="stt_rec0" isPrimaryKey="true" hidden="true" readOnly="true">
+			<header v="" e=""></header>
+		</field>
+		<field name="ma_dvcs" isPrimaryKey="true"  readOnly="true" allowNulls="false">
+			<header v="" e=""></header>
+		</field>
+		
+		<field name="line_nbr" type="Int32" hidden="true" readOnly="true">
+			<header v="" e=""></header>
+			<items style="Numeric"></items>
+		</field>
+
+		<field name="ten_lienhe" allowNulls="false">
+			<header v="Tên liên hệ" e="Description"></header>
+		</field>
+		<field name="ten_lienhe2">
+			<header v="Tên khác" e="Other Name"></header>
+		</field>
+		<field name="chuc_vu">
+			<header v="Chức vụ" e="Position"></header>
+		</field>
+		<field name="dien_thoai">
+			<header v="Điện thoại" e="Phone Number"></header>
+		</field>
+		<field name="fax">
+			<header v="Số gửi bản sao &lt;span class=&quot;LabelDescription&quot;&gt;(Fax)&lt;/span&gt;" e="Fax Number"></header>
+		</field>
+		<field name="e_mail">
+			<header v="Thư &lt;span class=&quot;LabelDescription&quot;&gt;(Email)&lt;/span&gt;, trang chủ" e="Email and Home Page"></header>
+		</field>
+		<field name="ghi_chu" rows="2">
+			<header v="Ghi chú" e="Note"></header>
+		</field>
+		<field name="status" dataFormatString="0, 1" clientDefault="1" align="right" inactivate="true">
+			<header v="Trạng thái" e="Status"></header>
+			<footer v="1 - Còn sử dụng, 0 - Không còn sử dụng" e="1 - Active, 0 - Inactive"></footer>
+			<items style="Mask"/>
+		</field>
+	</fields>
+
+	<views>
+
+		<view id="Dir" height="230">
+			<item value="140, 30, 45, 25, 45, 20, 30, 25, 65, 75, 25, 0"/>
+			<item value="110000000001: [ten_lienhe].Label, [ten_lienhe], [ma_dvcs]"/>
+			<item value="110000000001: [ten_lienhe2].Label, [ten_lienhe2], [ma_kh]"/>
+			<item value="110000----01: [chuc_vu].Label, [chuc_vu], [stt_rec0]"/>
+			<item value="110010001001: [dien_thoai].Label, [dien_thoai], [fax].Label, [fax], [line_nbr]"/>
+			<item value="11000000000: [e_mail].Label, [e_mail]"/>
+			<item value="11000000000: [ghi_chu].Label, [ghi_chu]"/>
+			<item value="11100000000: [status].Label, [status], [status].Description"/>
+		</view>
+	</views>
+
+	&XMLGridCommandExtension;
+
+	<css>
+		<text>
+			<![CDATA[
+.LabelDescription{color:#73A6DE;}
+]]>
+		</text>
+	</css>
+</dir>

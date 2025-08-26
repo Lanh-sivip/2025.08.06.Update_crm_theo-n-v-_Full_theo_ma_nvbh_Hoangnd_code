@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE grid [
+  <!ENTITY FilterCheckRight "ma_dvcs = @@unit and loai_quyen = '2'">
+]>
+
+<grid table="crmdmquyen" code="ma_quyen" order="ma_quyen" filter="&FilterCheckRight;" database="Sys" xmlns="urn:schemas-Sthink-company:data-grid">
+  <title v="Phân quyền sử dụng" e="Access Control"></title>
+  <subTitle v="Khai báo quyền bộ phận" e="Defining Department Access Control"></subTitle>
+
+  <fields>
+    <field name="ma_quyen" isPrimaryKey="true" width="100" allowSorting="true" allowFilter="true">
+      <header v="Mã quyền" e="Access Right"></header>
+    </field>
+    <field name="ten_quyen%l" width="300" allowSorting="true" allowFilter="true">
+      <header v="Tên quyền" e="Description"></header>
+      <header v="Tên quyền" e="Description"></header>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Grid">
+      <field name="ma_quyen"/>
+      <field name="ten_quyen%l"/>
+    </view>
+  </views>
+
+  <toolbar>
+    <button command="Edit">
+      <title v="Phân quyền" e="Edit"></title>
+    </button>
+    <button command="Freeze">
+      <title v="Toolbar.Freeze" e="Toolbar.Freeze"></title>
+    </button>
+  </toolbar>
+
+</grid>

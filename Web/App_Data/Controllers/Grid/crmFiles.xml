@@ -1,0 +1,190 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE grid [
+  <!ENTITY DowloadScript SYSTEM "..\Include\Javascript\DownloadScript.txt">
+  <!ENTITY TransferID "hrPIGeneralInformation">
+  <!ENTITY CreateTicket "declare @ticket varchar(32), @filename varchar(128), @description nvarchar(128)
+select @ticket = lower(replace(newid(),'-',''))
+if @@language = 'v' select @filename = 'hrPIGeneralInformation.xlsx', @description = N'Thông tin nhân viên'
+else select @filename = 'hrPIGeneralInformation2.xlsx', @description = N'File Information'
+insert into @@sysDatabaseName..ticket values(@ticket, @@userID, '&TransferID;', @filename, @description, '@@appDatabaseName', getdate());">
+]>
+
+<grid table="svTaptin" code="stt_rec" order="ma_file" type="Voucher" xmlns="urn:schemas-Sthink-company:data-grid">
+  <title v="Tập tin" e="File Document"></title>
+  <subTitle v="Cập nhật thông tin tập tin: thêm, sửa, xóa..." e="Add, Edit, Delete Files Information..."></subTitle>
+
+  <fields>
+    <field name="stt_rec" isPrimaryKey="true" width="0" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ngay_file" type="DateTime" dataFormatString="@datetimeFormat" width="100">
+      <header v="Ngày ct" e="Date"></header>
+    </field>	
+    <field name="ten_file" width="150">
+      <header v="Tên" e="File Name"></header>
+    </field>
+    <field name="ten_kh%l" width="150">
+      <header v="Khách" e="Customer"></header>
+    </field>	
+    <field name="ten_vv%l" width="150">
+      <header v="Vụ việc" e="Job"></header>
+    </field>	
+    <field name="ten_bp%l" width="150">
+      <header v="Bộ phận" e="Department"></header>
+    </field>
+    <field name="ten_ttnv%l" width="150">
+      <header v="Tình trạng" e="Status"></header>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Grid">
+      <field name="stt_rec"/>
+      <field name="ngay_file"/>	  
+      <field name="ten_file"/>
+      <field name="ten_kh%l"/>
+      <field name="ten_vv%l"/>
+      <field name="ten_bp%l"/>
+      <field name="ten_ttnv%l"/>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Loading">
+      <text>
+        &CreateTicket;
+        <![CDATA[
+select 'this._authorize = ' + rtrim(@@sysDatabaseName.dbo.Sthink$System$GetAuthorize(@@admin, @@userID, 'svFiles', 'New')) + ';this._key = ''' + @ticket + ''';init$FileGrid(this)' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Scattering">
+      <text>
+        <![CDATA[
+select 'refresh$FileViewPanel(this)' as message
+return     
+]]>
+      </text>
+    </command>
+
+    <command event="Closing">
+      <text>
+        <![CDATA[select 'dispose$FileGrid(this);' as message
+return]]>
+      </text>
+    </command>
+  </commands>
+
+  <script>
+    <text>
+      <![CDATA[
+function init$FileGrid(g) {
+  set$FilterMemvar(g);
+  g.add_onResponseComplete(on$FileGrid$ResponseComplete);
+  g.add_commandEvent(on$FileGrid$ExecuteCommand);
+}
+function dispose$FileGrid(g) {
+  try {g.remove_commandEvent(on$FileGrid$ExecuteCommand);} catch (ex) {}
+  try {g.remove_onResponseComplete(on$FileGrid$ResponseComplete);} catch (ex) {}  
+}
+function on$FileGrid$ExecuteCommand(sender, e) {
+  var action = e.type.Action, g = sender, v = e.type.Value, view = g._view;
+  switch (action) {
+    default:
+      break;
+  }
+}
+function on$FileGrid$ResponseComplete(sender, e) {
+  var g = e.object, context = e.type.Context, result = e.type.Result;
+  switch (context) {
+    default:
+      break;
+  }
+}
+]]>
+      &DowloadScript;
+    </text>
+  </script>
+
+  <response>
+    <action id="Download">
+      <text>
+        &CreateTicket;<![CDATA[
+select @ticket as value
+return
+]]>
+      </text>
+    </action>
+  </response>
+
+  <queries>    
+    <query event="Finding">
+      <text>
+        <![CDATA[
+declare @key nvarchar(4000), @join nvarchar(4000), @field nvarchar(4000), @bp_ref varchar(128)
+declare @male nvarchar(32), @female nvarchar(32), @f1 varchar(32), @f2 varchar(32), @f3 varchar(32)
+select @f1 = 'ten_bp', @f2 = 'ten_vtr', @f3 = 'ten_ttnv', @bp_ref = '', @join = '', @key = ''
+if @@language <> 'v' select @f1 = @f1 + '2', @f2 = @f2 + '2', @f3 = @f3 + '2'
+
+select @field = N'a.stt_rec, ngay_file, ten_file, b.ten_kh, c.ten_vv, d.ten_bp, CASE WHEN a.status = ''1'' THEN N''Chứng từ'' WHEN a.status = ''2'' THEN N''Hợp đồng'' ELSE N''Khác'' END AS ten_ttnv'
+
+declare @DateFrom SMALLDATETIME, @DateTo SMALLDATETIME
+SELECT @DateFrom = ngay_gh1, @DateTo = ngay_gh2 FROM dmstt
+if @DateTo < getdate() set @DateTo = getdate()
+
+SET @key = 'a.ma_dvcs = '+ CHAR(39)+@@unit+ CHAR(39)
+--if @status <> '*' set @key = @key + ' and a.status = '+ CHAR(39)+rtrim(ltrim(@status))+ CHAR(39)
+if @ma_kh <> '' set @key = @key + ' and a.ma_kh = '+ CHAR(39)+rtrim(ltrim(@ma_kh))+ CHAR(39)
+--if @ma_vv <> '' set @key = @key + ' and a.ma_vv = '+ CHAR(39)+rtrim(ltrim(@ma_vv))+ CHAR(39)
+--if @ma_bp <> '' set @key = @key + ' and a.ma_bp = '+ CHAR(39)+rtrim(ltrim(@ma_bp))+ CHAR(39)
+--if @dieu_kien <> '' set @key = @key + ' and a.ten_file like N'+ CHAR(39)+'%'+RTRIM(@dieu_kien)+'%'+ CHAR(39)
+select @join = 'LEFT JOIN dbo.dmkh b ON a.ma_kh = b.ma_kh LEFT JOIN dmvv c ON a.ma_vv = c.ma_vv LEFT JOIN dmbp d ON a.ma_bp = d.ma_bp'
+
+exec Sivip$Files$Finding @DateFrom, @DateTo, @@table, @@refresh, @@pageIndex, @@pageCount, @@lastPage, @@lastCount,
+  @@firstItem, @@lastItem, @key, @join, 'rtrim(a.stt_rec)', @field, 'a.ngay_file desc', '@@sysDatabaseName', @@admin, @@userID
+]]>
+      </text>
+    </query>
+  </queries>
+
+
+  <css>
+    <text>
+      <![CDATA[
+div.ImportData{background-image:url(../images/Upload.png);background-repeat:no-repeat;background-position:0 0;}
+div.ImportDataOverGreen{background-position:0 -22px;}
+div.Download{background-image:url(../Images/Download.png);background-repeat:no-repeat;background-position:0 0;}
+div.DownloadOverGreen{background-position:0 -22px;}
+]]>
+    </text>
+  </css>
+
+  <toolbar>
+    <button command="New">
+      <title v="Toolbar.New" e="Toolbar.New"/>
+    </button>
+    <button command="Edit">
+      <title v="Toolbar.Edit" e="Toolbar.Edit"/>
+    </button>
+    <button command="Delete">
+      <title v="Toolbar.Delete" e="Toolbar.Delete"/>
+    </button>
+    <!--<button command="Search">
+      <title v="Toolbar.Search" e="Toolbar.Search"></title>
+    </button>-->
+    <button command="View">
+      <title v="Toolbar.View" e="Toolbar.View"/>
+    </button>
+
+    <button command="-">
+      <title v="-" e="-"/>
+    </button>
+
+    <button command="Freeze">
+      <title v="Toolbar.Freeze" e="Toolbar.Freeze"/>
+    </button>
+  </toolbar>
+</grid>

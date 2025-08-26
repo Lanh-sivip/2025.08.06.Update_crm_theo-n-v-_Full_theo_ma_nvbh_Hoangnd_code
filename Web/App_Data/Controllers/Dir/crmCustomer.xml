@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--C-->
+
+<!DOCTYPE dir [
+  <!ENTITY XMLSuggestion SYSTEM "..\Include\XML\Suggestion.xml">
+  <!ENTITY ScriptSuggestion SYSTEM "..\Include\Javascript\Suggestion.txt">
+  <!ENTITY SVICheckEmail SYSTEM "..\Include\SVInvoice\SVICusCheckEmail.txt">
+  <!ENTITY SVIPostInsert SYSTEM "..\Include\SVInvoice\SVICusPostInsert.txt">
+  <!ENTITY SVIPostUpdate SYSTEM "..\Include\SVInvoice\SVICusPostUpdate.txt">
+  <!ENTITY SVIPostDelete SYSTEM "..\Include\SVInvoice\SVICusPostDelete.txt">
+
+  <!ENTITY CheckTaxCodeBeginTag "select @$typeConflict = rtrim(kt_mst) from dmdvcskb where ma_dvcs = @@unit
+if @ma_so_thue &lt;&gt; '' and @$typeConflict is not null and exists(select 1 from @@table where ma_so_thue = @ma_so_thue and ma_dvcs = @@unit">
+  <!ENTITY CheckTaxCodeEndTag ") begin
+  if @$typeConflict = '2' begin
+    select 'ma_so_thue' as field, replace(@$taxCodeConflict, '&#37;s', replace(replace(replace(rtrim(@ma_so_thue), '&amp;', '&amp;' + 'amp;'), '&lt;', '&amp;' + 'lt;'), '&gt;', '&amp;' + 'gt;')) as message
+    return
+  end else select @$scriptConflict = 'objectBehavior$TaxCode(this);'
+end">
+  <!ENTITY CheckTaxCodeWarning "if @$scriptConflict &lt;&gt; '' begin
+  select '' as field, '' as message, @$scriptConflict as script
+  return
+end">
+]>
+
+<dir table="zcdmkh" code="ma_dvcs, ma_kh" order="ma_kh" xmlns="urn:schemas-Sthink-company:data-dir">
+  <title v="thông tin khách hàng" e="Customer"></title>
+  <fields>    
+    <field name="ma_kh" isPrimaryKey="true" dataFormatString="@upperCaseFormat" clientDefault="Default" allowNulls="false">
+      <header v="Mã khách" e="Customer ID"></header>
+	  <footer v="Gõ 2 kí tự đầu, Ấn mũi tên xuống trên bàn phím để tăng mã tự động" e=""></footer>
+      <items style="Mask"/>
+    </field>
+    <field name="ten_kh" allowNulls="false">
+      <header v="Tên khách hàng" e="Customer Name"></header>
+    </field>
+	  <field name="ma_dvcs" isPrimaryKey="true" allowNulls="false" disabled="true">
+		  <header v="Đơn vị" e="Unit"></header>
+		  <items style="AutoComplete" controller="Unit" reference="ten_dvcs%l" key="status = '1' and ma_dvcs in (select ma_dvcs from vdmdvcs)" check="1 = 1" information="ma_dvcs$dmdvcs.ten_dvcs%l"/>
+	  </field>
+	  <field name="ten_dvcs%l" readOnly="true" external="true" defaultValue="''">
+		  <header v="" e=""></header>
+	  </field>
+    <field name="ten_kh2">
+      <header v="Tên khác" e="Other Name"></header>
+    </field>
+    <field name="dia_chi">
+      <header v="Địa chỉ" e="Address"></header>
+    </field>
+    <field name="ma_so_thue" dataFormatString="@upperCaseFormat">
+      <header v="Mã số thuế" e="Tax Code"></header>
+	  <footer v="Gõ MST, ấn Enter Sivip tự tìm tên và địa chỉ" e=""></footer>
+	  <clientScript><![CDATA[onchange="onChange$Voucher$mst(this);"]]></clientScript>
+      <items style="Mask"/>
+    </field>
+    <field name="doi_tac">
+      <header v="Đối tác" e="Partner"></header>
+    </field>
+    <field name="ma_nvbh">
+      <header v="Nv bán hàng" e="Sales Employee"></header>
+      <items style="AutoComplete" controller="SalesEmployee" reference="ten_nvbh%l" key="status = '1'" check="1=1" information="ma_nvbh$dmnvbh.ten_nvbh%l"/>
+    </field>
+    <field name="ten_nvbh%l" readOnly="true" external="true" defaultValue="''" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="tk" clientDefault="Default">
+      <header v="Tài khoản ngầm định" e="Default Account"></header>
+      <items style="AutoComplete" controller="Account" reference="ten_tk%l" key="loai_tk = 1 and status = '1'" check="loai_tk = 1" information="tk$dmtk.ten_tk%l" new="Default"/>
+    </field>
+    <field name="ten_tk%l" readOnly="true" external="true" clientDefault="Default" defaultValue="''" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="gc_td1" clientDefault="Default">
+      <header v="Diễn giải hóa đơn ngầm định" e="Note"></header>
+    </field>	
+    <field name="ma_tt" clientDefault="Default">
+      <header v="Mã thanh toán" e="Default Term"></header>
+      <items style="AutoComplete" controller="Term" reference="ten_tt%l" key="status = '1'" check="1 = 1" information="ma_tt$dmtt.ten_tt%l"/>
+    </field>
+    <field name="ten_tt%l" readOnly="true" external="true" clientDefault="Default" defaultValue="''" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="t_tien_cn" type="Decimal" dataFormatString="@baseCurrencyAmountInputFormat" clientDefault="0">
+      <header v="Giới hạn tiền nợ" e="Credit Limit"></header>
+      <items style="Numeric"/>
+    </field>
+    <field name="ngay_gh" type="DateTime" dataFormatString="@datetimeFormat" align="left">
+      <header v="Đến ngày" e="To Date"></header>
+    </field>
+    <field name="kh_yn" type="Boolean" clientDefault="Default" defaultValue="true">
+      <header v="Khách hàng" e="Customer"></header>
+    </field>
+    <field name="cc_yn" type="Boolean" clientDefault="Default" defaultValue="true">
+      <header v="Nhà cung cấp" e="Supplier"></header>
+    </field>
+    <field name="nv_yn" type="Boolean" align="" clientDefault="Default" defaultValue="true">
+      <header v="Nhân viên" e="Employee"></header>
+    </field>
+    <field name="nh_kh1" clientDefault="Default">
+      <header v="Nhóm 1, 2, 3" e="Group 1, 2, 3"></header>
+      <items style="AutoComplete" controller="CustomerGroup" reference="ten_nh_kh1%l" key="loai_nh = 1 and status = '1'" check="loai_nh = 1" information="ma_nh$dmnhkh.ten_nh%l"/>
+    </field>
+    <field name="ten_nh_kh1%l" readOnly="true" external="true" clientDefault="Default" defaultValue="''" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="nh_kh2" clientDefault="Default">
+      <header v="" e=""></header>
+      <items style="AutoComplete" controller="CustomerGroup" reference="ten_nh_kh2%l" key="loai_nh = 2 and status = '1'" check="loai_nh = 2" information="ma_nh$dmnhkh.ten_nh%l"/>
+    </field>
+    <field name="ten_nh_kh2%l" readOnly="true" external="true" clientDefault="Default" defaultValue="''" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="nh_kh3" clientDefault="Default">
+      <header v="" e=""></header>
+      <items style="AutoComplete" controller="CustomerGroup" reference="ten_nh_kh3%l" key="loai_nh = 3 and status = '1'" check="loai_nh = 3" information="ma_nh$dmnhkh.ten_nh%l"/>
+    </field>
+    <field name="ten_nh_kh3%l" readOnly="true" external="true" clientDefault="Default" defaultValue="''" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="nh_kh9" clientDefault="Default">
+      <header v="Nhóm khách tính giá" e="Customer Price Class"></header>
+      <items style="AutoComplete" controller="CustomerPriceClass" reference="ten_nh_kh9%l" key="status = '1'" check="1 = 1" information="ma_nh$dmnhkh2.ten_nh%l"/>
+    </field>
+    <field name="ten_nh_kh9%l" readOnly="true" external="true" clientDefault="Default" defaultValue="''">
+      <header v="" e=""></header>
+    </field>
+    <field name="dien_thoai">
+      <header v="Điện thoại" e="Phone Number"></header>
+    </field>
+    <field name="fax">
+      <header v="Số gửi bản sao &lt;span class=&quot;LabelDescription&quot;&gt;(Fax)&lt;/span&gt;" e="Fax Number"></header>
+    </field>
+    <field name="e_mail" allowNulls="true">
+      <header v="Thư &lt;span class=&quot;LabelDescription&quot;&gt;(Email)&lt;/span&gt;, trang chủ" e="Email and Home Page"></header>
+    </field>
+    <field name="e_mailcc" allowNulls="true">
+      <header v="Email CC, Email BCC" e="Email and Home Page"></header>
+    </field>
+    <field name="e_mailbcc" allowNulls="true">
+      <header v="" e="Email and Home Page"></header>
+    </field>
+    <field name="home_page">
+      <header v="" e=""></header>
+    </field>
+    <field name="tk_nh" dataFormatString="@upperCaseFormat">
+      <header v="Tài khoản ngân hàng" e="Bank Account"></header>
+      <items style="Mask"/>
+    </field>
+    <field name="ngan_hang">
+      <header v="Tên ngân hàng" e="Bank Name"></header>
+    </field>
+    <field name="tinh_thanh">
+      <header v="Tỉnh thành" e="Province/City"></header>
+    </field>
+	<field name="nguoi_daidien">
+      <header v="Người đại diện" e="representative"></header>
+    </field>
+	<field name="chuc_vu">
+      <header v="Chức vụ" e="position"></header>
+    </field>
+    <field name="ghi_chu" rows="2">
+      <header v="Ghi chú" e="Note"></header>
+      <footer v="&lt;div class=&quot;Break&quot;/&gt;" e="&lt;div class=&quot;Break&quot;/&gt;"></footer>
+    </field>
+    <field name="status" dataFormatString="0, 1" clientDefault="1" align="right" inactivate="true">
+      <header v="Trạng thái" e="Status"></header>
+      <footer v="1 - Còn sử dụng, 0 - Không còn sử dụng" e="1 - Active, 0 - Inactive"></footer>
+      <items style="Mask"/>
+    </field>
+    <field name="ma_tt_mst%l" readOnly="true" external="true" defaultValue="''" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ten_tt_mst%l" readOnly="true" external="true" defaultValue="''" hidden="true">
+      <header v="" e=""></header>
+    </field>	
+  </fields>
+
+  <views>
+    <view id="Dir">
+      <item value="120, 30, 45, 25, 65, 45, 30, 25, 65, 75, 25, 0"/>	  
+      <item value="110010000001: [ma_kh].Label, [ma_kh], [ma_kh].Description, [ma_dvcs]"/>	  
+      <item value="110010000001: [ma_so_thue].Label, [ma_so_thue], [ma_so_thue].Description, [ten_dvcs%l]"/>
+      <item value="11000000000: [ten_kh].Label, [ten_kh]"/>
+      <item value="11000000000: [ten_kh2].Label, [ten_kh2]"/>
+      <item value="11000000000: [dia_chi].Label, [dia_chi]"/>
+      <item value="11001010010: [doi_tac].Label, [doi_tac], [ten_nvbh%l], [ma_nvbh].Label, [ma_nvbh]"/>
+      <item value="11001110010: [tk].Label, [tk], [ten_tk%l], [ten_tt%l], [ma_tt].Label, [ma_tt]"/>
+      <item value="10010000000: [gc_td1].Label, [gc_td1]"/>	  
+      <item value="1100--10010: [t_tien_cn].Label, [t_tien_cn],[ngay_gh].Label, [ngay_gh]"/>
+      <item value="10000000000: [ghi_chu].Description"/>
+      <item value="-101-101-11: [kh_yn].Label, [kh_yn], [cc_yn].Label, [cc_yn], [nv_yn].Label, [nv_yn]"/>
+      <item value="110011001101: [nh_kh1].Label, [nh_kh1], [ten_nh_kh1%l], [nh_kh2], [ten_nh_kh2%l], [nh_kh3], [ten_nh_kh3%l]"/>
+      <item value="11001000000: [nh_kh9].Label, [nh_kh9], [ten_nh_kh9%l]"/>
+      <item value="1100--10010: [dien_thoai].Label, [dien_thoai], [fax].Label, [fax]"/>
+      <item value="11000010000: [e_mail].Label, [e_mail], [home_page]"/>
+      <item value="11000010000: [e_mailcc].Label, [e_mailcc], [e_mailbcc]"/>
+      <item value="11001010000: [tk_nh].Label, [tk_nh], [ngan_hang].Label, [ngan_hang]"/>
+      <item value="11--1010000: [ma_tt_mst], [ten_tt_mst], [tinh_thanh].Label, [tinh_thanh]"/>
+	  <item value="11001010000: [nguoi_daidien].Label, [nguoi_daidien], [chuc_vu].Label, [chuc_vu]"/>
+      <item value="11000000000: [ghi_chu].Label, [ghi_chu]"/>
+      <item value="11100000000: [status].Label, [status], [status].Description"/>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Loading">
+      <text>
+        <![CDATA[
+declare @unitName nvarchar(1023), @emailmd char(128)
+select @unitName = case when @@language = 'v' then ten_dvcs else ten_dvcs2 end from dmdvcs where ma_dvcs = @@unit
+IF (select cusemailfruser from dmdvcskb where ma_dvcs = @@unit) = '1' set @emailmd = (select e_mail from vsysuserinfo where id = @@userID) else set @emailmd = ''
+select 'this._url$EInvoice=''~/AppService/sivip.asmx'';this._service$Method=''getttmst'';this._emailmd=''' + rtrim(@emailmd) + ''';this._unitCode=''' + @@unit + ''';this._unitName=''' + replace(replace(isnull(@unitName, ''), '\', '\\'), '''', '\''') + ''';initUnitSite(this);active$FormCustomer(this);' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Closing">
+      <text>
+        <![CDATA[
+select 'close$FormCustomer(this);' as message
+return
+]]>
+      </text>
+    </command>
+	
+	<command event="Scattering">
+      <text>
+        <![CDATA[
+select 'initUnitSite(this);' as message
+return
+]]>
+      </text>
+    </command>
+	
+    <command event="Declare">
+      <text>
+        <![CDATA[
+declare @$exists nvarchar(512), @$updateConflict nvarchar(512), @$recordHasBeenChanged nvarchar(512), @$deleteConflict nvarchar(512), @$taxCodeConflict nvarchar(512), @$scriptConflict nvarchar(512), @$typeConflict nvarchar(512)
+select @$exists = case when @@language = 'v' then N'Khách hàng <span class="Highlight">%s</span> đã có hoặc lồng nhau trong danh mục.' else N'The customer <span class="Highlight">%s</span> is invalid or already exists.' end
+select @$updateConflict = case when @@language = 'v' then N'Khách hàng <span class="Highlight">%s</span> đã phát sinh, không thể sửa được.' else N'Cannot edit the customer <span class="Highlight">%s</span>. It has already been used.' end
+select @$deleteConflict = case when @@language = 'v' then N'Khách hàng <span class="Highlight">%s</span> đã phát sinh, không thể xóa được.' else N'Cannot delete the customer <span class="Highlight">%s</span>. It has already been used.' end
+select @$recordHasBeenChanged = case when @@language = 'v' then N'Khách hàng <span class="Highlight">%s</span> đã được sửa hoặc xóa bởi người sử dụng khác.' else N'The customer <span class="Highlight">%s</span> has been modified or deleted by another user.' end
+select @$taxCodeConflict = case when @@language = 'v' then N'Mã số thuế <span class="Highlight">%s</span> đã có trong danh mục.' else N'The tax code <span class="Highlight">%s</span> is already exists.' end, @$scriptConflict = '', @$typeConflict = null
+]]>
+      </text>
+    </command>
+
+    <command event="Inserting">
+      <text>
+        <![CDATA[
+if exists(select top 1 ma_kh, ma_dvcs from @@table where (((rtrim(ltrim(ma_kh)) like rtrim(@ma_kh) + '%') and (rtrim(ltrim(ma_dvcs)) = ltrim(rtrim(@ma_dvcs)) )) or ((ltrim(rtrim(@ma_kh)) like ltrim(rtrim(ma_kh)) + '%') and ltrim(rtrim(@ma_dvcs)) = ltrim(rtrim(ma_dvcs))))) begin
+  select 'ma_kh' as field, replace(@$exists, '%s', rtrim(@ma_kh)) as message
+  return
+end
+]]>&SVICheckEmail;&CheckTaxCodeBeginTag;&CheckTaxCodeEndTag;<![CDATA[
+select @datetime0 = getdate(), @datetime2 = getdate(), @user_id0 = @@userID, @user_id2 = @@userID
+]]>
+      </text>
+    </command>
+
+    <command event ="Inserted">
+      <text>
+        &CheckTaxCodeWarning;
+		&SVIPostInsert;
+      </text>
+    </command>
+
+    <command event="Updating">
+      <text>
+        <![CDATA[
+if not exists(select top 1 ma_kh from @@table where ma_kh = $ma_kh.OldValue)
+  begin
+    select 'ma_kh' as field, replace(@$recordHasBeenChanged, '%s', rtrim($ma_kh.OldValue)) as message
+    return
+  end
+if @ma_kh <> $ma_kh.OldValue
+  begin
+    if exists(select top 1 ma_kh, ma_dvcs from @@table where (((ltrim(rtrim(ma_kh)) like ltrim(rtrim(@ma_kh)) + '%') and (ltrim(rtrim(ma_dvcs)) = ltrim(rtrim(@ma_dvcs)) )) or ((ltrim(rtrim(@ma_kh)) like ltrim(rtrim(ma_kh)) + '%') and (ltrim(rtrim(@ma_dvcs)) = ltrim(rtrim(ma_dvcs)))) and ma_kh <> $ma_kh.OldValue))
+      begin
+        select 'ma_kh' as field, replace(@$exists, '%s', rtrim(@ma_kh)) as message
+        return
+      end
+
+    declare @message nvarchar(255)
+    select @message  = replace(@$updateConflict, '%s', rtrim($ma_kh.OldValue))
+    if exists(select top 1 ma_kh, ma_dvcs from cdkh where ma_kh = $ma_kh.OldValue and ma_dvcs = $ma_dvcs.OldValue )
+      begin
+        select @message as message
+        return
+      end
+
+    if exists(select top 1 ma_kh, ma_dvcs from ct00 where ma_kh = $ma_kh.OldValue and ma_dvcs = $ma_dvcs.OldValue)
+      begin
+        select @message as message
+        return
+      end
+  end
+]]>&SVICheckEmail;&CheckTaxCodeBeginTag;<![CDATA[ and ma_kh <> $ma_kh.OldValue]]>&CheckTaxCodeEndTag;
+      </text>
+    </command>
+
+    <command event="Updated">
+      <text>
+        <![CDATA[
+update @@table set datetime2 = getdate(), user_id2 = @@userID where ma_kh = @ma_kh
+]]>
+        &SVIPostUpdate;
+        &CheckTaxCodeWarning;
+      </text>
+    </command>
+
+    <command event="Deleting">
+      <text>
+        <![CDATA[
+declare @message nvarchar(255)
+select @message  = replace(@$deleteConflict, '%s', rtrim(@ma_kh))
+if exists(select top 1 ma_kh, ma_dvcs from cdkh where ma_kh = @ma_kh and ma_dvcs = @@unit)
+  begin
+    select @message as message
+    return
+  end
+if exists(select top 1 ma_kh, ma_dvcs from ct00 where ma_kh = @ma_kh and ma_dvcs = @@unit)
+  begin
+    select @message as message
+    return
+  end
+]]>
+      </text>
+    </command>
+	
+    <command event ="Deleted">
+      <text>
+		&SVIPostDelete;
+      </text>
+    </command>
+
+    <command event="Checking">
+      <text>
+        <![CDATA[
+if (!(this.getItem('kh_yn').checked) && !(this.getItem('cc_yn').checked) && !(this.getItem('nv_yn').checked)) {
+  var _message = (this._language == 'v' ? 'Chưa khai báo thông tin: khách hàng, nhà cung cấp hoặc nhân viên.' : 'One of customer, supplier or employee field must be checked.');
+  this._checked = false;
+  $func.hideWait(this.get_id());
+  $message.show(_message, String.format('$find(\'{0}\').getItem(\'kh_yn\').focus();', this.get_id()));
+}
+]]>
+      </text>
+    </command>
+
+  </commands>
+
+  <script>
+    <text>
+      <![CDATA[
+function active$FormCustomer(f) {
+  objectBehavior$Dir$Code.create(f, 'ma_kh', 'ma_kh', 'dmkh');
+  f.add_onResponseComplete(on$FormCustomer$ResponseComplete);
+}
+function close$FormCustomer(f) {
+  try {f.remove_onResponseComplete(on$FormCustomer$ResponseComplete)} catch (ex) {}
+  objectBehavior$Dir$Code.dispose(f);
+}
+function on$FormCustomer$ResponseComplete(sender, e) {
+  var f = e.object, context = e.type.Context, result = e.type.Result;
+  switch (context) {
+    case 'Suggestion':
+      objectBehavior$Dir$Code.suggestion(f, result[0].Value);
+      break;
+    case 'Checking':
+      objectBehavior$Dir$Code.checkCode(f);
+      break;
+	case 'MST':
+       f.setItemControlBehavior('ten_kh', result[0].Value, '');
+       f.setItemControlBehavior('dia_chi', result[1].Value, '');
+       f.setItemControlBehavior('ma_tt_mst', result[2].Value, '');
+       f.setItemControlBehavior('ten_tt_mst', result[3].Value, '');	   
+      break;
+    default:
+      break;
+  }
+}
+function initUnitSite(f) {
+  if (f._action == 'New') {
+    o = f.getItem('ma_dvcs');
+    o.value = f._unitCode;
+    f.getItem('ten_dvcs%l').value = f._unitName;
+    f.live(o);
+	f.getItem('ma_kh').focus();	
+	f.getItem('e_mail').value = f._emailmd;
+  }
+}
+function objectBehavior$TaxCode(f) {
+  if (f && f.getItem('ma_so_thue') {
+    var v = $func.htmlEncode(f.getItemValue('ma_so_thue').toUpperCase()), message = (f._language == 'v' ? 'Mã số thuế <span class="Highlight">' + v + '</span> đã tồn tại trong danh mục.<div style="color:#444444;">Lưu ý: Hệ thống vẫn lưu dữ liệu vừa cập nhật.</div>' : 'The tax code <span class="Highlight">' + v + '</span> is already exists.<div style="color:#444444;">Warnings: Updated data has been saved.</div>');
+    $message.show(message, String.format('$find(\'{0}\').getItem(\'ma_so_thue\').focus();', f.get_id()));
+  }    
+}
+function onChange$Voucher$mst(o) {
+	var f = o.parentForm;
+	request$getttkh(f);	
+	setTimeout(1000);
+	f.request('MST', 'MST', ['ma_so_thue'], o);
+	}
+function request$getttkh(g, o) {
+  var mst =  g.getItem('ma_so_thue').value;
+  Sys.Net.WebServiceProxy.invoke('../AppService/sivip.asmx', g._service$Method, false, 
+  {
+    'mst': mst
+  }
+  , null, onRequest$Failed, g._id);
+}
+
+function onRequest$Failed(e, id) {
+ var message = 'Lỗi trong quá tình lấy thông tin mã số thuế. Vui lòng liên hệ Sivip. Hotline: 02363 668 959. '+e.get_message();
+ $message.show(message, String.format('$find(\'{0}\').getItem(\'ma_so_thue\').focus();', id));
+}
+]]>
+      &ScriptSuggestion;
+    </text>
+  </script>
+
+  <response>
+    &XMLSuggestion;
+	<action id="MST">
+		  <text>
+			<![CDATA[
+declare @ttkh_option CHAR(1), @tenkh nvarchar(max),  @dckh nvarchar(max), @matt char(3),  @tentt nvarchar(1024)
+SELECT  @ttkh_option = tt_kh from dmdvcskb where ma_dvcs= @@unit
+set @tenkh = ''
+set @dckh  = ''
+IF @ttkh_option = '0'  BEGIN
+	set @tenkh = ''
+	set @dckh  = ''
+End
+IF @ttkh_option = '1' and @ma_so_thue <> '' BEGIN
+	set @tenkh = dbo.tenkh(@ma_so_thue)
+	set @dckh  = dbo.diachikh(@ma_so_thue)
+	set @matt = ''
+	set @tentt = ''
+End
+IF @ttkh_option = '2' and @ma_so_thue <> '' BEGIN
+	set @tenkh = (select ten_kh from svttmst where ma_so_thue = @ma_so_thue)
+	set @dckh  = (select dia_chi from svttmst where ma_so_thue = @ma_so_thue)
+	set @matt = (select ma_tt from svttmst where ma_so_thue = @ma_so_thue)
+	set @tentt = (select ten_tt from svttmst where ma_so_thue = @ma_so_thue)
+End
+select  rtrim(@tenkh) as tenkh, rtrim(@dckh) as diachi, rtrim(@matt) as matt, rtrim(@tentt) as tentt
+ 
+	]]>
+      </text>
+    </action>
+  </response>
+
+  <css>
+    <text>
+      <![CDATA[
+.Break{margin:1px 0 1px 8px;padding:0;height:1px;overflow:hidden;display:block;background-color:white;border-top:1px solid #CED3DE;}
+.LabelDescription{color:#73A6DE;}
+]]>
+    </text>
+  </css>
+</dir>

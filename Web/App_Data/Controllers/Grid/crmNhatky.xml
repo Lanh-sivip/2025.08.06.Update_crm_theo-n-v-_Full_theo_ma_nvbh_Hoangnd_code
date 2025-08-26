@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<grid table="vcrmnhatky" code="ma_dvcs, ma_kh, stt_rec0" order="stt_rec0" xmlns="urn:schemas-Sthink-company:data-grid">
+  <title v="" e=""></title>
+  <subTitle v="" e=""></subTitle>
+	<partition table="crmnhatky" prime="crmnhatky" inquiry="" field="" expression="''" increase="{0}" default=""/>
+  <fields>	  
+    <field name="ma_dvcs" isPrimaryKey="true" width="0" hidden="true">
+      <header v="" e=""></header>
+    </field>
+	  <field name="ma_kh" isPrimaryKey="true" width="0" hidden="true">
+		  <header v="" e=""></header>
+	  </field>
+    <field name="stt_rec0" isPrimaryKey="true" width="0" hidden="true">
+      <header v="" e=""></header>
+    </field>
+
+	  <field name="ngay_bd" type="DateTime" dataFormatString="@datetimeFormat" width="100">
+		  <header v="Ngày thực hiện" e="Date"></header>
+	  </field>
+	  <field name="tieu_de" width="100" allowSorting="true" allowFilter="true">
+		  <header v="Tiêu đề" e="Competitor Name"></header>
+	  </field>
+	  <field name="noi_dung" width="350" allowSorting="true" allowFilter="true">
+		  <header v="Mô tả" e="Competitor Name"></header>
+	  </field>
+	  <field name="ten_gdtn%l" width="150" allowSorting="true" allowFilter="true">
+		  <header v="Giai đoạn" e="Competitor Name"></header>
+	  </field>
+	  <field name="ten_lienhe%l" width="300" allowSorting="true" allowFilter="true">
+		  <header v="Tên liên hệ" e="Competitor Name"></header>
+	  </field>
+  </fields>
+
+  <views>
+    <view id="Grid">
+		<field name="ma_dvcs"/>
+      <field name="ma_dvcs"/>
+		<field name="ma_kh"/>
+      <field name="stt_rec0"/>
+
+		<field name="ngay_bd"/>
+		<field name="tieu_de"/>
+		<field name="noi_dung"/>
+		<field name="ten_gdtn%l"/>
+		<field name="ten_lienhe%l"/>
+    </view>
+  </views>
+
+</grid>

@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE grid [
+  <!ENTITY FilterCheckAccessUnit "(@@admin = 1 or (@@table.id in (select id from @@sysDatabaseName..userinfo2 where dbo.ff_ExactInlist(name, (select restrict_users from @@sysDatabaseName..userinfo2 where id = @@userID and restrict_yn = '1')) = 1)))">
+]>
+
+<grid table="vcrmdashboard" code="name" order="name, id" filter="&FilterCheckAccessUnit;" xmlns="urn:schemas-Sthink-company:data-grid">
+  <title v="Cập nhật hạn chế màn hình chính theo đơn vị cơ sở" e="Access Right by Unit"></title>
+  <subTitle v="Mã đơn vị cơ sở: %s1 - %s2." e="Unit: %s1 - %s2."></subTitle>
+
+  <fields>
+    <field name="ma_dvcs" isPrimaryKey="true" width="0" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="id" width="50" isPrimaryKey="true" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="name" width="100" dataFormatString="X" allowFilter="true" allowSorting="true">
+      <header v="Người sử dụng" e="User"></header>
+    </field>
+    <field name="comment" width="300" allowFilter="true" allowSorting="true">
+      <header v="Tên đầy đủ" e="Description"></header>
+    </field>
+    <field name="phaithu" type="Boolean" width="100" allowFilter="true" allowSorting="true">
+      <header v="Phải thu" e="New"></header>
+    </field>
+    <field name="phaitra" type="Boolean" width="100" allowFilter="true" allowSorting="true">
+      <header v="Phải trả" e="Edit"></header>
+    </field>
+    <field name="tienmat" type="Boolean" width="100" allowFilter="true" allowSorting="true">
+      <header v="Tiền mặt" e="Delete"></header>
+    </field>
+    <field name="tonkho" type="Boolean" width="100" allowFilter="true" allowSorting="true">
+      <header v="Tồn kho" e="Access"></header>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Grid">
+      <field name="ma_dvcs"/>
+      <field name="id"/>
+      <field name="user_yn"/>
+      <field name="name"/>
+      <field name="comment"/>
+      <field name="phaithu"/>
+      <field name="phaitra"/>
+      <field name="tienmat"/>
+      <field name="tonkho"/>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Loading">
+      <text>
+        <![CDATA[select 'load$Grid(this);' as message
+return]]>
+      </text>
+    </command>
+
+    <command event="Closing">
+      <text>
+        <![CDATA[select 'dispose$Grid(this);' as message
+return]]>
+      </text>
+    </command>
+  </commands>
+
+  <script>
+    <text>
+      <![CDATA[
+function load$Grid(g) {
+  g._k = [];  
+  g.add_commandEvent(on$GridUser$ExecuteCommand);
+}
+function dispose$Grid(g) {try {g.remove_commandEvent(on$GridUser$ExecuteCommand);} catch (ex) {}}
+function on$GridUser$ExecuteCommand(sender, e) {
+  var action = e.type.Action, g = sender;
+  switch (action) {
+    case 'BeforeFormLoad':
+      e.type.Value.set_vars([{Name: 'u', Type: 'String', Value: g._unitCode}]);
+      break;
+    default:
+      break;
+  }
+}
+]]>
+    </text>
+  </script>
+
+  <toolbar>
+    <button command="New">
+      <title v="Toolbar.New" e="Toolbar.New"></title>
+    </button>
+    <button command="Edit">
+      <title v="Toolbar.Edit" e="Toolbar.Edit"></title>
+    </button>
+    <button command="Delete">
+      <title v="Toolbar.Delete" e="Toolbar.Delete"></title>
+    </button>
+    <button command="Search">
+      <title v="Toolbar.Search" e="Toolbar.Search"></title>
+    </button>
+    <button command="Freeze">
+      <title v="Toolbar.Freeze" e="Toolbar.Freeze"></title>
+    </button>
+  </toolbar>
+
+</grid>

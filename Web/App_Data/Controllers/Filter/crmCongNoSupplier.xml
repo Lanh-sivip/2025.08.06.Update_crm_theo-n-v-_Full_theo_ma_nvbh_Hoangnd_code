@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE dir [
+  <!ENTITY XMLWhenFilterLoading SYSTEM "..\Include\XML\WhenFilterLoading.xml">
+  <!ENTITY XMLWhenFilterClosing SYSTEM "..\Include\XML\WhenFilterClosing.xml">
+
+  <!ENTITY OutlineCss SYSTEM "..\Include\Javascript\OutlineCss.txt">
+  <!ENTITY OutlineEntry SYSTEM "..\Include\Javascript\OutlineEntry.txt">
+  <!ENTITY OnSelectionOutline SYSTEM "..\Include\Javascript\OnSelectionOutline.txt">
+]>
+
+<dir id="1" type="Report" xmlns="urn:schemas-Sthink-company:data-dir">
+  <title v="Điều kiện lọc" e="Filter Condition"></title>
+  <fields>
+    <field name="tk" allowNulls="false" aliasName="defaultAPAccount">
+      <header v="Tài khoản" e="Account"/>
+      <items style="AutoComplete" controller="Account" reference="ten_tk%l" key="status = '1' and tk_cn = 1" check="tk_cn = 1" />
+    </field>
+    <field name="ten_tk%l" readOnly="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ma_kh" allowNulls="false" aliasName="defaultAPCustomer">
+      <header v="Mã khách" e="Customer"></header>
+      <items style="AutoComplete" controller="Customer" reference="ten_kh%l" key="(cc_yn = 1 or nv_yn = 1) and status = '1'" check="(cc_yn = 1 or nv_yn = 1)"/>
+    </field>
+    <field name="ten_kh%l" readOnly="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="tu_ngay" type="DateTime" dataFormatString="@datetimeFormat" allowNulls="false" aliasName="fromDate" defaultValue="new Date()">
+      <header v="Từ ngày" e="Date from"></header>
+      <footer v="Từ/đến ngày" e="Date from/to"></footer>
+    </field>
+    <field name="den_ngay" type="DateTime" dataFormatString="@datetimeFormat" allowNulls="false" aliasName="toDate" defaultValue="new Date()">
+      <header v="Đến ngày" e="Date to"></header>
+    </field>
+    <field name="isdetail" dataFormatString="0, 1" clientDefault="0" align="right">
+      <header v="Chi tiết theo mặt hàng" e="Detailed by Goods"/>
+      <footer v="1 - Có, 0 - Không" e="1 - Yes, 0 - No"></footer>
+      <items style="Mask"/>
+    </field>
+    <field name="isbalance" dataFormatString="0, 1" clientDefault="0" align="right">
+      <header v="Tính số dư" e="Balance"/>
+      <footer v="1 - Có, 0 - Không" e="1 - Yes, 0 - No"></footer>
+      <items style="Mask"/>
+    </field>
+    <field name="ma_dvcs">
+      <header v="Đơn vị" e="Unit"></header>
+      <items style="Lookup" controller="Unit" key="status = '1'" check="1 = 1"/>
+    </field>
+    <field name="mau_bc" clientDefault="10">
+      <header v="Mẫu báo cáo" e="Report Form"></header>
+      <items style="DropDownList">
+        <item value="10">
+          <text v="Mẫu chuẩn" e="Standard Form"/>
+        </item>
+        <item value="20">
+          <text v="Mẫu ngoại tệ" e="FC Form"/>
+        </item>
+      </items>
+      <clientScript>&OnSelectionOutline;</clientScript>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Dir">
+      <item value="120, 30, 70, 100, 100, 130"/>
+      <item value="110100: [tk].Label, [tk], [ten_tk%l]"/>
+      <item value="110100: [ma_kh].Label, [ma_kh], [ten_kh%l]"/>
+      <item value="1101--: [tu_ngay].Description, [tu_ngay], [den_ngay]"/>
+      <item value="111000: [isdetail].Label, [isdetail], [isdetail].Description"/>
+      <item value="111000: [isbalance].Label, [isbalance], [isbalance].Description"/>
+      <item value="11000-: [ma_dvcs].Label, [ma_dvcs]"/>
+      <item value="11000-: [mau_bc].Label, [mau_bc]"/>
+    </view>
+  </views>
+
+  <commands>
+    &XMLWhenFilterLoading;
+    &XMLWhenFilterClosing;
+    <command event="Processing">
+      <text>
+        <![CDATA[
+declare @accountName nvarchar(1024), @accountName2 nvarchar(1024), @customerName nvarchar(1024), @customerName2 nvarchar(1024)
+select @accountName = ten_tk, @accountName2 = ten_tk2 from dmtk where tk = @tk
+select @customerName = ten_kh, @customerName2 = ten_kh2 from dmkh where ma_kh = @ma_kh
+select cast(@tu_ngay as smalldatetime) as date_from, cast(@den_ngay as smalldatetime) as date_to,
+		@ma_kh as ma_kh, @customerName as ten_kh, @customerName2 as ten_kh2, @tk as tk, @accountName as ten_tk, @accountName2 as ten_tk2 
+exec rs_rptDCCustomer @tu_ngay, @den_ngay, @ma_dvcs, @tk, @ma_kh, @@language, @isbalance, @isdetail, 2, @@userID, @@admin
+]]>
+      </text>
+    </command>
+  </commands>
+
+  <script>
+    <text>
+      &OutlineEntry;
+      <![CDATA[
+function active$VoucherFilter$(sender) {
+	sender.add_onResponseComplete(on$Filter$ResponseComplete);
+	changeLookupReadonly(sender, 'ma_dvcs');
+	sender.request('GetDefaultValue', 'SetDefaultValue', ['tk', 'ma_kh']);
+}
+function close$VoucherFilter$(sender) {try {sender.remove_onResponseComplete(on$Filter$ResponseComplete);} catch (ex) {}}
+function on$Filter$ResponseComplete(sender, e) {
+  var f = e.object, context = e.type.Context, result = e.type.Result;
+  switch (context) {
+    case 'Checking':		
+			var g = f.grid;
+			var x = f.getItemValue('mau_bc'), b = f.getItemValue('isbalance'), d = f.getItemValue('isdetail');
+      f.grid._hiddenFields = [
+				{Fields: 'so_luong, gia, tien', Value: (d == '0')},
+				{Fields: 'du_no, du_co', Value: (b == '0')},
+				{Fields: 'gia_nt, tien_nt', Value: (x == '10' || d == '0')},
+				{Fields: 'du_no_nt, du_co_nt', Value: (x == '10' || b == '0')},
+				{Fields: 'ps_no_nt, ps_co_nt, ty_gia, ty_gia_ck, ma_nt', Value: (x == '10')}	
+			];
+      g._hiddenForms = [
+        {Form: [4, 5, 6, 7], Value: (d == '0')},
+        {Form: [2, 3, 6 ,7], Value: (b == '0')},
+        {Form: [0, 1, 2, 3], Value: (d == '1')},
+        {Form: [0, 1, 4, 5], Value: (b == '1')}
+      ];
+			var dFrom = f.getItem('tu_ngay').value, dTo = f.getItem('den_ngay').value, account = f.getItem('tk').value, customer = f.getItem('ma_kh').value, customerName = f.getItem('ten_kh%l').value;
+      g._alterTitle = [null, [['%d1', dFrom, true], ['%d2', dTo, true], ['%s1', account, true], ['%s2', customer, true], ['%s3', customerName, true]]];
+      break;
+		case 'SetDefaultValue':
+      f.setItemControlBehavior('ten_tk%l', result[0].Value, null, true);
+      if (result[0].Value == '') f.setItemValue('tk', '');
+			f.setItemControlBehavior('ten_kh%l', result[1].Value, null, true);
+      if (result[1].Value == '') f.setItemValue('ma_kh', '');
+			break;
+		default:
+      break;
+  }
+}
+]]>
+    </text>
+  </script>
+
+  <response>
+    <action id="GetDefaultValue">
+      <text>
+        <![CDATA[
+declare @c0 nvarchar(1024), @c1 nvarchar(1024)
+select @c0 = ten_tk%l from dmtk where tk = @tk
+select @c1 = ten_kh%l from dmkh where ma_kh = @ma_kh
+select isnull(@c0, '') as c0, isnull(@c1, '') as c1
+return
+				]]>
+      </text>
+    </action>
+  </response>
+
+  &OutlineCss;
+</dir>

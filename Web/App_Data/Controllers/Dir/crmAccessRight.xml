@@ -1,0 +1,179 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE dir [
+  <!ENTITY ScriptIrregular SYSTEM "..\Include\Javascript\Irregular.txt">
+]>
+
+<dir table="crmdmquyen" code="ma_dvcs, ma_quyen" order="ma_dvcs, ma_quyen" database="Sys" xmlns="urn:schemas-Sthink-company:data-dir">
+  <title v="quyền" e="Access Right"></title>
+  <fields>
+	  <field name="ma_dvcs" isPrimaryKey="true" hidden="true" readOnly="true">
+		  <header v="" e=""></header>
+	  </field>
+    <field name="ma_quyen" isPrimaryKey="true" dataFormatString="@upperCaseFormat" allowNulls="false">
+      <header v="Mã quyền" e="Access Right"></header>
+      <items style="Mask"/>
+    </field>
+    <field name="ten_quyen" allowNulls="false">
+      <header v="Tên quyền" e="Description"></header>
+    </field>
+    <field name="ten_quyen2">
+      <header v="Tên khác" e="Other Name"></header>
+    </field>
+    <field name="loai_quyen" dataFormatString="1, 2, 3" clientDefault="1" align="right">
+      <header v="Loại quyền" e="Type"></header>
+      <footer v="1 - Chức năng, 2 - Bộ phận, 3 - Khách hàng" e="1 - Task, 2 - Department, 3 - User"></footer>
+      <items style="Mask"/>
+    </field>
+    <field name="status" dataFormatString="0, 1" clientDefault="1" align="right" inactivate="true">
+      <header v="Trạng thái" e="Status"></header>
+      <footer v="1 - Còn sử dụng, 0 - Không còn sử dụng" e="1 - Active, 0 - Inactive"></footer>
+      <items style="Mask"/>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Dir">
+      <item value="120, 30, 70, 100, 230, 0"/>
+      <item value="110--1: [ma_quyen].Label, [ma_quyen], [ma_dvcs]"/>
+      <item value="11000: [ten_quyen].Label, [ten_quyen]"/>
+      <item value="11000: [ten_quyen2].Label, [ten_quyen2]"/>
+      <item value="11100: [loai_quyen].Label, [loai_quyen], [loai_quyen].Description"/>
+      <item value="11100: [status].Label, [status], [status].Description"/>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Loading">
+      <text>
+        <![CDATA[
+select 'active$FormRight(this);' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Closing">
+      <text>
+        <![CDATA[
+select 'close$FormRight(this);' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Declare">
+      <text>
+        <![CDATA[
+declare @$exists nvarchar(512), @$updateConflict nvarchar(512), @$deleteConflict nvarchar(512), @$recordHasBeenChanged nvarchar(512)
+select @$exists = case when @@language = 'v' then N'Quyền sử dụng <span class="Highlight">%s</span> đã có hoặc lồng nhau trong danh mục quyền sử dụng.' else N'This right <span class="Highlight">%s</span> is invalid or already exists.' end
+select @$updateConflict = case when @@language = 'v' then N'Mã quyền <span class="Highlight">%s</span> đã phát sinh, không thể sửa được.' else N'Cannot update the right <span class="Highlight">%s</span>. It has already been used.' end
+select @$deleteConflict = case when @@language = 'v' then N'Mã quyền <span class="Highlight">%s</span> đã phát sinh, không thể xóa được.' else N'Cannot delete the right <span class="Highlight">%s</span>. It has already been used.' end
+select @$recordHasBeenChanged = case when @@language = 'v' then N'Quyền sử dụng <span class="Highlight">%s</span> đã được sửa hoặc xóa bởi người sử dụng khác.' else N'This right <span class="Highlight">%s</span> has been modified or deleted by another user.' end
+]]>
+      </text>
+    </command>
+
+    <command event="Inserting">
+      <text>
+        <![CDATA[
+if @@admin <> 1 return
+if exists(select * from @@table where ((ma_quyen like rtrim(@ma_quyen) + '%' and ma_dvcs = @@unit) or rtrim(@ma_quyen) like rtrim(ma_quyen) + '%' and ma_dvcs = @@unit))
+  begin
+    select 'ma_quyen' as field, replace(@$exists, '%s', rtrim(@ma_quyen)) as message
+    return
+  end
+select @ma_dvcs = @@unit, @datetime0 = getdate(), @datetime2 = getdate(), @user_id0 = @@userID, @user_id2 = @@userID
+]]>
+      </text>
+    </command>
+	  <command event="Inserted">
+		  <text>
+			  <![CDATA[
+select @@unit as ma_dvcs
+return
+]]>
+		  </text>
+	  </command>
+    <command event="Updating">
+      <text>
+        <![CDATA[
+if @@admin <> 1 return
+if not exists(select * from @@table where ma_quyen = $ma_quyen.OldValue and ma_dvcs = $ma_dvcs.OldValue)
+  begin
+    select 'ma_quyen' as field, replace(@$recordHasBeenChanged, '%s', rtrim($ma_quyen.OldValue)) as message
+    return
+  end
+
+if @ma_quyen <> $ma_quyen.OldValue
+  begin
+    if exists(select * from @@table where ((ma_quyen like rtrim(@ma_quyen) + '%') or rtrim(@ma_quyen) like rtrim(ma_quyen) + '%') and ma_quyen <> $ma_quyen.OldValue and ma_dvcs = @ma_dvcs)
+      begin
+        select 'ma_quyen' as field, replace(@$exists, '%s', rtrim(@ma_quyen)) as message
+        return
+      end
+      
+    if exists(select 1 from crmquyennsd where ma_quyen = $ma_quyen.OldValue and ma_dvcs = $ma_dvcs.OldValue)
+      begin
+        select 'ma_quyen' as field, replace(@$updateConflict, '%s', rtrim($ma_quyen.OldValue)) as message
+        return
+      end
+  end
+
+if not exists(select * from @@table where ma_quyen = $ma_quyen.OldValue and loai_quyen = @loai_quyen and ma_dvcs = $ma_dvcs.OldValue)
+  begin
+    if exists(select 1 from crmquyennsd where ma_quyen = $ma_quyen.OldValue and ma_dvcs = $ma_dvcs.OldValue)
+      begin
+        select 'loai_quyen' as field, replace(@$updateConflict, '%s', rtrim($ma_quyen.OldValue)) as message
+        return
+    end
+  end
+]]>
+      </text>
+    </command>
+
+    <command event="Updated">
+      <text>
+        <![CDATA[
+update @@table set datetime2 = getdate(), user_id2 = @@userID where ma_quyen = @ma_quyen and ma_dvcs = @ma_dvcs
+]]>
+      </text>
+    </command>
+
+    <command event="Deleting">
+      <text>
+        <![CDATA[
+if @@admin <> 1 return        
+if exists(select 1 from crmquyennsd where ma_quyen = @ma_quyen and ma_dvcs = @ma_dvcs)
+  begin
+    select replace(@$deleteConflict, '%s', rtrim(@ma_quyen)) as message
+    return
+  end
+
+delete crmctquyenbp where ma_quyen = @ma_quyen and ma_dvcs = @ma_dvcs
+delete crmctquyentab where ma_quyen = @ma_quyen and ma_dvcs = @ma_dvcs 
+]]>
+      </text>
+    </command>
+  </commands>
+
+  <script>
+    <text>
+      <![CDATA[
+function active$FormRight(f) {f.add_onResponseComplete(on$FormRight$ResponseComplete);}
+function close$FormRight(f) {try {f.remove_onResponseComplete(on$FormRight$ResponseComplete)} catch (ex) {}}
+function on$FormRight$ResponseComplete(sender, e) {
+  var f = e.object, context = e.type.Context, result = e.type.Result;
+  switch (context) {
+    case 'Checking':
+      objectBehavior$Dir$Irregular.checkCode(f, 'ma_quyen');
+      break;
+    default:
+      break;
+  }
+}
+]]>
+      &ScriptIrregular;
+    </text>
+  </script>
+</dir>

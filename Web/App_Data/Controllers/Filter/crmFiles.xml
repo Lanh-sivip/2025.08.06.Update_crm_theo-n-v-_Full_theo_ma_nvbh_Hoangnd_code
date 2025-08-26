@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--C-->
+<!DOCTYPE dir [
+  <!ENTITY OutlineCss SYSTEM "..\Include\Javascript\OutlineCss.txt">
+  <!ENTITY OutlineEntry SYSTEM "..\Include\Javascript\OutlineEntry.txt">
+  <!ENTITY OnSelectionOutline SYSTEM "..\Include\Javascript\OnSelectionOutline.txt">
+  
+   <!ENTITY ScriptFilterInit SYSTEM "..\Include\Javascript\FilterInit.txt">
+]>
+
+<dir table="svTaptin" code="stt_rec" order="stt_rec" xmlns="urn:schemas-Sthink-company:data-dir">
+  <title v="Điều kiện lọc" e="Filter Condition"></title>
+  <fields>
+   <field name="tu_ngay" type="DateTime" dataFormatString="@datetimeFormat" allowNulls="false" aliasName="fromDate" defaultValue="new Date()">
+      <header v="Từ ngày" e="Date from"></header>
+      <footer v="Từ/đến ngày" e="Date from/to"></footer>
+    </field>
+    <field name="den_ngay" type="DateTime" dataFormatString="@datetimeFormat" allowNulls="false" aliasName="toDate" defaultValue="new Date()">
+      <header v="Đến ngày" e="Date to"></header>
+    </field>
+    <field name="dieu_kien">
+      <header v="Tên tập tin" e=""></header>
+    </field>
+    <field name="ma_kh" clientDefault="Default">
+      <header v="Khách hàng" e="Customer"></header>
+      <items style="AutoComplete" controller="Customer" reference="ten_kh%l" key="status = '1'" check="1 = 1" information="ma_kh$dmkh.ten_kh%l"/>
+    </field>
+    <field name="ten_kh%l" readOnly="true" external="true" clientDefault="Default" defaultValue="''" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ma_vv" clientDefault="Default">
+      <header v="Vụ việc" e="Job"></header>
+      <items style="AutoComplete" controller="Job" reference="ten_vv%l" key="status = '1'" check="1 = 1" information="ma_vv$dmvv.ten_vv%l"/>
+    </field>
+    <field name="ten_vv%l" readOnly="true" external="true" clientDefault="Default" defaultValue="''" hidden="true">
+      <header v="" e=""></header>
+    </field>	
+	<field name="ma_bp" clientDefault="Default">
+      <header v="Bộ phận" e="Department"></header>
+      <items style="AutoComplete" controller="Department" reference="ten_bp%l" key="status = '1'" check="1 = 1" information="ma_bp$dmbp.ten_bp%l"/>
+    </field>
+    <field name="ten_bp%l" readOnly="true" external="true" clientDefault="Default" defaultValue="''" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="status" dataFormatString="*, 1, 2, 3, 4, 5" clientDefault="*" align="right">
+      <header v="Trạng thái" e="Status"></header>
+      <footer v="&lt;span style=&quot;color:#008200;&quot;&gt;[*]&lt;/span&gt; 1. Hợp đồng /2. Phụ lục /3. Báo giá /4. BB đối chiếu công nợ /5. Khác" e="&lt;span style=&quot;color:#008200;&quot;&gt;[*]&lt;/span&gt; - Show all status information"></footer>
+      <items style="Mask"/>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Dir">
+      <item value="120, 30, 70, 100, 100, 130, 0"/>
+      <item value="1101--: [tu_ngay].Description, [tu_ngay], [den_ngay]"/>	  
+      <item value="1100: [dieu_kien].Label, [dieu_kien]"/>
+	  <item value="1101: [ma_kh].Label, [ma_kh], [ten_kh%l] "/>
+	  <item value="1101: [ma_vv].Label, [ma_vv], [ten_vv%l] "/>
+	  <item value="1101: [ma_bp].Label, [ma_bp], [ten_bp%l] "/>
+      <item value="1110000: [status].Label, [status], [status].Description"/>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Loading">
+      <text>
+        <![CDATA[
+select 'active$FilterReport$(this);' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Closing">
+      <text>
+        <![CDATA[
+select 'close$FilterReport$(this);' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Inserted">
+      <text>
+        <![CDATA[
+        ]]>
+      </text>
+    </command>
+
+    <command event="Processing">
+      <text>
+        <![CDATA[
+
+]]>
+      </text>
+    </command>
+
+  </commands>
+
+  <script>
+    <text>
+      &OutlineEntry;
+      <![CDATA[
+function active$FilterReport$(f) {
+  f.add_onResponseComplete(on$Voucher$ResponseComplete);
+   var g = f.grid, fields = f.grid._searchInfor.Fields,  b = f.getItem('nvbh');
+   b.setAttribute('disabled','disabled');
+  if (g._dvUserFilterType != null) $func.findField('user_id0', fields).ClientDefault = g._dvUserFilterType;
+}
+function close$FilterReport$(f) {try {sender.remove_onResponseComplete(on$Filter$ResponseComplete);} catch (ex) {}}
+function onChange$Voucher$mst(o) {o.parentForm.request('DebitAccount', 'DebitAccount', ['ma_so_thue'], o);}
+function on$Voucher$ResponseComplete(sender, e) {
+  var f = e.object, context = e.type.Context, result = e.type.Result;
+  switch (context) {
+    case 'DebitAccount':
+      f.setItemControlBehavior('nvbh', result[0].Value, '');
+      break;
+  }
+}
+  ]]>
+    </text>
+  </script>
+  <response>
+
+    <action id="DebitAccount">
+      <text>
+        <![CDATA[
+declare @nv char(8)		
+select @nv = s4 from vsysuserinfo where id = @@userID
+if exists(select * from dmkh where ma_so_thue = @ma_so_thue  and ma_nvbh <> '') begin
+  select top 1 ma_nvbh from dmkh where ma_so_thue = @ma_so_thue
+  return
+  end
+else
+begin
+  select N'Chưa có mã số thuế hoặc chưa thuộc sale nào'
+  return
+end
+]]>
+      </text>
+    </action>
+
+  </response>
+  
+</dir>

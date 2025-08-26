@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<dir table="crmquyennsd" code="ma_quyen, user_id" order="ma_quyen, user_id" database="Sys" xmlns="urn:schemas-Sthink-company:data-dir">
+  <title v="Lọc dữ liệu" e="Filter Data"></title>
+
+  <fields>	   
+    <field name="ma_quyen" onDemand="true">
+      <header v="Quyền sử dụng" e="Access Right"></header>
+      <items style="AutoComplete" controller="crmAccessRight" reference="ten_quyen%l" key="@@admin = 1 or ma_quyen in (select ma_quyen from crmquyennsd where user_id = @@userID) and status = '1'" check="1 = 1"/>
+    </field>
+    <field name="ten_quyen%l" readOnly="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="name" onDemand="true">
+      <header v="Người sử dụng" e="User"></header>
+      <items style="AutoComplete" controller="UserGroup" reference="comment%l" key="(@@admin = 1 or patindex('&#37;,' + rtrim(name) + ',&#37;', (select ',' + replace(restrict_users,' ','') + ',' from userinfo2 where id = @@userID and restrict_yn = '1')) &lt;&gt; 0) and admin = 0 and user_yn = 1 and status = '1'" check="(@@admin = 1 or patindex('&#37;,' + rtrim(name) + ',&#37;', (select ',' + replace(restrict_users,' ','') + ',' from userinfo2 where id = @@userID and restrict_yn = '1')) &lt;&gt; 0) and admin = 0 and user_yn = 1"/>
+      <clientScript><![CDATA[onchange=onChange$UserRightFilter$UserID(this);]]></clientScript>
+    </field>
+    <field name="comment%l" readOnly="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="user_id" type="Int32" readOnly="true" hidden="true">
+      <header v="" e=""/>
+      <items style="Numeric"></items>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Dir">
+      <item value="120, 100, 100, 230, 0"/>
+      <item value="1110: [ma_quyen].Label, [ma_quyen], [ten_quyen%l]"/>
+      <item value="11101: [name].Label, [name], [comment%l], [user_id]"/>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Loading">
+      <text>
+        <![CDATA[
+select 'active$UserRightFilter$(this);' as message
+return
+]]>
+
+      </text>
+    </command>
+
+    <command event="Closing">
+      <text>
+        <![CDATA[
+select 'close$UserRightFilter$(this);' as message
+return
+]]>
+
+      </text>
+    </command>
+  </commands>
+  <script>
+    <text>
+      <![CDATA[
+function active$UserRightFilter$(sender) {sender.add_onResponseComplete(on$UserRightFilter$ResponseComplete);}
+function close$UserRightFilter$(sender) {try {sender.remove_onResponseComplete(on$UserRightFilter$ResponseComplete);} catch (ex) {}}
+function onChange$UserRightFilter$UserID(o) {o.parentForm.request('UserID', 'UserID', ['name']);}
+function on$UserRightFilter$ResponseComplete(sender, e) {
+  var f = e.object, context = e.type.Context, result = e.type.Result;
+  switch (context) {
+    case 'Checking':
+      var g = f.grid, k = new Array();
+      g._userID = f.getItemValue('user_id');
+      g._rightID = f.getItemValue('ma_quyen');
+      g._rightName = $func.trim(f.getItem('ten_quyen%l').value);
+      if (g._userID != 0) Array.add(k, {Name: 'user_id', Opr: '=', Value: g._userID, Type: 'Numeric', Ignore: false});
+      if ($func.trim(g._rightID) != '') {
+        Array.add(k, {Name: 'ma_quyen', Opr: '=', Value: g._rightID, Type: 'String', Ignore: false});
+        g._alterTitle = [null, [['%s1', g._rightID.toString(), true], ['%s2', g._rightName, true]]];
+      } else g._alterTitle = [null, [['%s1', '*', true], ['%s2', '*', true]]];
+      g.set_externalKey(k);
+      break;
+    case 'UserID':
+      f.setItemValue('user_id', result[0].Value);
+      break;
+    default:
+      break;
+  }
+}
+]]>
+    </text>
+  </script>
+
+  <response>
+    <action id="UserID">
+      <text>
+        <![CDATA[
+if exists(select 1 from @@sysDatabaseName..userinfo2 where name = @name) begin
+  select id from @@sysDatabaseName..userinfo2 where name = @name
+  return
+end
+]]>
+      </text>
+    </action>
+  </response>
+
+</dir>

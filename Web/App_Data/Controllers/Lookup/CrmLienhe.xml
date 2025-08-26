@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<lookup table="crmlienhe" filter="ma_dvcs IN (SELECT ma_dvcs FROM sysunitrights WHERE user_id = @@userID AND r_access = 1)" code="stt_rec0" name="ten_lienhe%l" order="stt_rec0" xmlns="urn:schemas-Sthink-company:data-lookup">
+
+  <header v="Liên hệ" e="Contact"></header>
+
+  <fields>
+	<field name="stt_rec0" allowSorting="true" allowFilter="true">
+      <header v ="Mã liên hệ" e = "Contact number"></header>
+    </field>
+    <field name="ten_lienhe%l" allowSorting="true" allowFilter="true">
+      <header v ="Tên liên hệ" e = "Contact number"></header>
+    </field>
+
+  </fields>
+
+</lookup>

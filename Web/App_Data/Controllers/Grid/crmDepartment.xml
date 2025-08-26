@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<grid table="vcrmbp" code="ma_dvcs, ma_bp" order="stt_ref, ma_bp" filter="ma_dvcs = @@unit" xmlns="urn:schemas-Sthink-company:data-grid">
+
+  <title v="Danh mục bộ phận" e="Department List"></title>
+  <subTitle v="Cập nhật bộ phận: thêm, sửa, xóa..." e="Add, Edit, Delete Department..."></subTitle>
+
+  <fields>
+    <field name="ma_bp" isPrimaryKey="true" width="100" allowSorting="true" allowFilter="true">
+      <header v="Mã bộ phận" e="Department"></header>
+    </field>
+    <field name="ten%l" width="300" allowSorting="true" allowFilter="true">
+      <header v="Tên bộ phận" e="Description"></header>
+    </field>
+    <field name="stt_ref" width="0" hidden="true" readOnly="true">
+      <header v="" e=""></header>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Grid">
+      <field name="ma_bp"/>
+      <field name="ten%l"/>
+      <field name="stt_ref"/>
+    </view>
+  </views>
+
+</grid>

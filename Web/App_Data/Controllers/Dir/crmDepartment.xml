@@ -1,0 +1,392 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE dir [
+  <!ENTITY ScriptIrregular SYSTEM "..\Include\Javascript\Irregular.txt">
+
+  <!ENTITY Declare "declare @p varchar(16), @l varchar(512), @i int, @c bit, @t varchar(3)
+declare @bp_ref2 varchar(128), @bp_ref3 varchar(128), @stt_ref2 varchar(512), @stt_me varchar(512)">
+  <!ENTITY CheckParentDepartment "select @l = @ma_bp + char(255), @i = 0, @c = 0, @p = ''
+if @ma_bp &lt;&gt; @bp_me begin
+  while @i &lt;= 16 begin
+    if @i = 0 select @p = @bp_me
+    select @p = rtrim(bp_me) from @@table where ma_bp = @p and ma_dvcs = @ma_dvcs
+    if @p = '' begin
+      select @c = 1; break
+    end else begin
+      if charindex(@p + char(255), @l) > 0 break
+      else select @l = @l + @p + char(255)
+    end
+    select @i = @i + 1
+  end
+end
+if @c = 0 begin
+  select 'bp_me' as field, @$parentConflict as message
+  return
+end ">
+  <!ENTITY UpdateUnit "if @ma_dvcs &lt;&gt; @$ma_dvcs2 and @bp_me = '' begin
+--update zcdmkh set ma_dvcs = @ma_dvcs where bp_ref like @bp_ref + '&#37;'
+update @@table set ma_dvcs = @ma_dvcs where bp_ref like @bp_ref + '&#37;' and ma_bp &lt;&gt; @ma_bp and ma_dvcs = @ma_dvcs end">
+
+  <!ENTITY c1 "if not exists(select 1 from @@table where bp_ref &lt;&gt; '' and ma_dvcs = @ma_dvcs) select @bp_ref = '001' else begin
+select @bp_ref2 = rtrim(max(bp_ref) + 1) from @@table where len(bp_ref) = 3 and ma_dvcs = @ma_dvcs
+select @bp_ref = replicate('0', 3 - len(@bp_ref2)) + @bp_ref2 end
+select @stt_ref = replicate('0', 5 - len(@stt)) + rtrim(@stt) + '#' + @ma_bp + '#'
+select @stt_ref2 = replicate('0', 5 - len(@$stt2)) + rtrim(@$stt2) + '#' + @ma_bp + '#'">
+
+  <!ENTITY c2 "select @bp_ref2 = bp_ref from @@table where ma_bp = @bp_me and ma_dvcs = @ma_dvcs
+select @bp_ref = rtrim(max(bp_ref)) from @@table where bp_ref like @bp_ref2 + '&#37;' and len(bp_ref) = len(@bp_ref2) + 3 and ma_dvcs = @ma_dvcs
+select @t = rtrim(right(@bp_ref, 3) + 1)
+select @bp_ref = left(@bp_ref, len(@bp_ref) - 3) + replicate('0', 3 - len(@t)) + @t
+select @bp_ref = isnull(@bp_ref, rtrim(@bp_ref2) + '001')
+select @stt_me = stt_ref from @@table where ma_bp = @bp_me and ma_dvcs = @ma_dvcs
+select @stt_ref = @stt_me + replicate('0', 5 - len(@stt)) + rtrim(@stt) + '#' + @ma_bp + '#'">
+
+  <!ENTITY c3 "if @bp_me = @$bp_me2 select @bp_ref2 = bp_ref from @@table where ma_bp = $ma_bp.OldValue and ma_dvcs = $ma_dvcs.OldValue
+else begin select @bp_ref2 = bp_ref from @@table where ma_bp = @bp_me and ma_dvcs = @ma_dvcs
+select @bp_ref = rtrim(max(bp_ref)) from @@table where bp_ref like @bp_ref2 + '&#37;' and len(bp_ref) = len(@bp_ref2) + 3 and ma_dvcs = @ma_dvcs
+select @t = rtrim(right(@bp_ref, 3) + 1)
+select @bp_ref = left(@bp_ref, len(@bp_ref) - 3) + replicate('0', 3 - len(@t)) + @t
+select @bp_ref = isnull(@bp_ref, rtrim(@bp_ref2) + '001') end
+select @stt_ref2 = stt_ref from @@table where ma_bp = $ma_bp.OldValue and ma_dvcs = $ma_dvcs.OldValue
+select @stt_me = stt_ref from @@table where ma_bp = @bp_me and ma_dvcs = @ma_dvcs
+select @stt_ref = @stt_me + replicate('0', 5 - len(@stt)) + rtrim(@stt) + '#' + @ma_bp + '#' end">
+
+  <!ENTITY WhenDepartmentInserting "if @bp_me &lt;&gt; @$bp_me2 begin &Declare;&CheckParentDepartment;&c2; end else begin &c1; end">
+
+  <!ENTITY WhenDepartmentUpdating "&UpdateUnit; if @bp_me &lt;&gt; @$bp_me2 or @stt &lt;&gt; @$stt2 or @ma_bp &lt;&gt; $ma_bp.OldValue begin &Declare;
+select @bp_ref3 = @bp_ref; if @bp_me = '' begin &c1; end else begin &CheckParentDepartment;&c3;
+
+if ((@bp_me = '' or @$bp_me2 = '') and @bp_me &lt;&gt; @$bp_me2) select @c = 1 else select @c = 0
+update @@table set stt_ref = case @c when 1 then @stt_ref else @stt_ref + right(stt_ref, len(stt_ref) - len(@stt_ref2)) end where bp_ref like @bp_ref3 + '&#37;' and ma_dvcs = @ma_dvcs
+
+if @bp_me &lt;&gt; @$bp_me2 begin
+--update zcdmkh set bp_ref = @bp_ref where bp_ref like @bp_ref3 + '&#37;'
+update @@table set bp_ref = @bp_ref where bp_ref like @bp_ref3 + '&#37;' and ma_dvcs = @ma_dvcs
+update @@sysDatabaseName..crmctquyenbp set r_access2 = replace(r_access2, @bp_ref3, @bp_ref) where dbo.ff_Inlist(@bp_ref3, r_access2) = 1 and ma_dvcs = @ma_dvcs
+update @@sysDatabaseName..crmquyenbp set r_access2 = replace(r_access2, @bp_ref3, @bp_ref) where dbo.ff_Inlist(@bp_ref3, r_access2) = 1
+end
+end">
+]>
+
+<dir table="crmbp" code="ma_dvcs, ma_bp" order="stt_ref, ma_bp" xmlns="urn:schemas-Sthink-company:data-dir">
+  <title v="bộ phận" e="Department"></title>
+  <fields>
+	  <field name="ma_dvcs" isPrimaryKey="true" allowNulls="false" hidden="true" readOnly="true">
+		  <header v="Đơn vị" e="Unit"></header>
+		  <items style="AutoComplete" controller="Unit" reference="ten_dvcs%l" key="status = '1'" check="1 = 1" information="ma_dvcs$dmdvcs.ten_dvcs%l" row="1"/>
+	  </field>
+	  <field name="ten_dvcs%l" readOnly="true" external="true" defaultValue="''">
+		  <header v="" e=""></header>
+	  </field>
+    <field name="ma_bp" isPrimaryKey="true" dataFormatString="@upperCaseFormat" allowNulls="false">
+      <header v="Mã bộ phận" e="Department"></header>
+      <items style="Mask"/>
+    </field>
+    <field name="ten_bp" allowNulls="false">
+      <header v="Tên bộ phận" e="Description"></header>
+    </field>
+    <field name="ten_bp2">
+      <header v="Tên khác" e="Other Name"></header>
+    </field>
+    <field name="bp_me" clientDefault="Default">
+      <header v="Mã bộ phận mẹ" e="Parent Department"></header>
+      <items style="AutoComplete" controller="crmDepartment" reference="ten_bp_me%l" key="status ='1'" check="1 = 1" information="ma_bp$crmbp.ten_bp%l" row="1"/>
+      <clientScript><![CDATA[onchange=onChange$FormDepartment$ParentDepartment(this);]]></clientScript>
+    </field>
+    <field name="ten_bp_me%l" readOnly="true" external="true" defaultValue="''">
+      <header v="" e=""></header>
+    </field>
+    <field name="ma_ngam_dinh" dataFormatString="@upperCaseFormat" maxLength="5">
+      <header v="Mã nv ngầm định" e="Default Employee ID"></header>
+      <items style="Mask"/>
+    </field>   
+    <field name="nh_bp3">
+      <header v="Nhóm bộ phận 3" e="Department Group 3"></header>      		
+    <items style="AutoComplete" controller="SalesEmployee" reference="ten_nh_bp3%l" key="status = '1'" check="1=1" information="ma_nvbh$dmnvbh.ten_nvbh%l"/>
+    </field>
+    <field name="ten_nh_bp3%l" readOnly="true" external="true" defaultValue="''">
+      <header v="" e=""></header>
+    </field>
+    <field name="ma_bp0">
+      <header v="Mã bộ phận phí" e="Cost Center"></header>
+      <items style="AutoComplete" controller="Department" key="status='1'" check="1=1" reference="ten_bp_phi%l" information="ma_bp$dmbp.ten_bp%l"/>
+    </field>
+    <field name="ten_bp_phi%l" defaultValue="''" readOnly="true" external="true">
+      <header v="" e=""/>
+    </field>
+    
+    <field name="stt" type="Decimal" dataFormatString="###0" defaultValue="0">
+      <header v="Stt sắp xếp" e="Ordinal Number"></header>
+      <items style="Numeric"/>
+    </field>
+    <field name="ghi_chu" rows="2">
+      <header v="Ghi chú" e="Note"></header>
+    </field>
+    <field name="status" dataFormatString="0, 1" clientDefault="1" align="right" inactivate="true">
+      <header v="Trạng thái" e="Status"></header>
+      <footer v="1 - Còn sử dụng, 0 - Không còn sử dụng" e="1 - Active, 0 - Inactive"></footer>
+      <items style="Mask"/>
+    </field>
+
+    <field name="bp_ref" hidden="true" disabled="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="stt_ref" hidden="true" disabled="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="stt2" external="true" hidden="true" defaultValue="''" filterSource="Ignore" allowContain="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="bp_me2" external="true" hidden="true" defaultValue="''" filterSource="Ignore" allowContain="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ma_dvcs2" external="true" hidden="true" defaultValue="''" filterSource="Ignore" allowContain="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ten%l" external="true" hidden="true" defaultValue="''" filterSource="Ignore">
+      <header v="" e=""></header>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Dir">
+      <item value="120, 30, 70, 330, 0"/>
+      <item value="110-1: [ma_bp].Label, [ma_bp], [bp_ref]"/>
+      <item value="11001: [ten_bp].Label, [ten_bp], [stt_ref]"/>
+      <item value="11001: [ten_bp2].Label, [ten_bp2], [ten%l]"/>
+      <item value="11011: [bp_me].Label, [bp_me], [ten_bp_me%l], [bp_me2]"/>
+      <item value="110-1: [ma_ngam_dinh].Label, [ma_ngam_dinh], [ma_dvcs]"/>
+      <item value="11011: [nh_bp3].Label, [nh_bp3], [ten_nh_bp3%l], [ten_dvcs%l]"/>
+      <item value="11011: [ma_bp0].Label, [ma_bp0], [ten_bp_phi%l], [ma_dvcs2]"/>      
+      <item value="110-1: [stt].Label, [stt], [stt2]"/>
+      <item value="1100: [ghi_chu].Label, [ghi_chu]"/>
+      <item value="1110: [status].Label, [status], [status].Description"/>
+    </view>
+  </views>
+
+  <commands>
+    <command event="Loading">
+      <text>
+        <![CDATA[
+declare @unitName nvarchar(1023)
+select @unitName = case when @@language = 'v' then ten_dvcs else ten_dvcs2 end from dmdvcs where ma_dvcs = @@unit
+select 'this._unitCode=''' + @@unit + ''';this._unitName=''' + replace(replace(isnull(@unitName, ''), '\', '\\'), '''', '\''') + ''';init$FormDepartment(this);active$FormDepartment(this);' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Scattering">
+      <text>
+        <![CDATA[
+select 'init$FormDepartment(this);' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Closing">
+      <text>
+        <![CDATA[
+select 'close$FormDepartment(this);' as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Declare">
+      <text>
+        <![CDATA[
+declare @$exists nvarchar(512), @$unitConflict nvarchar(512), @$parentConflict nvarchar(512), @$changeConflict nvarchar(512), @$childConflict nvarchar(512), @$updateConflict nvarchar(512), @$recordHasBeenChanged nvarchar(512), @$deleteConflict nvarchar(512)
+select @$exists = case when @@language = 'v' then N'Mã bộ phận <span class="Highlight">%s</span> đã có hoặc lồng nhau trong danh mục bộ phận.' else N'The department <span class="Highlight">%s</span> is invalid or already exists.' end
+select @$unitConflict = case when @@language = 'v' then N'Đơn vị cơ sở không hợp lệ.' else N'Invalid Unit.' end
+select @$parentConflict = case when @@language = 'v' then N'Bộ phận mẹ không hợp lệ.' else N'Invalid Parent Department.' end
+select @$changeConflict = case when @@language = 'v' then N'Bộ phận đã có bộ phận con, không sửa bộ phận mẹ được.' else N'Cannot save the parent department. This item has already been used.' end
+select @$childConflict = case when @@language = 'v' then N'Bộ phận <span class="Highlight">%s</span> đã có bộ phận con, không sửa bộ phận được.' else N'Cannot save the department <span class="Highlight">%s</span>. This item has already been used.' end
+select @$updateConflict = case when @@language = 'v' then N'Mã bộ phận <span class="Highlight">%s</span> đã phát sinh, không thể sửa được.' else N'Cannot edit the department <span class="Highlight">%s</span>. It has already been used.' end
+select @$deleteConflict = case when @@language = 'v' then N'Mã bộ phận <span class="Highlight">%s</span> đã phát sinh, không thể xóa được.' else N'Cannot delete the department <span class="Highlight">%s</span>. It has already been used.' end
+select @$recordHasBeenChanged = case when @@language = 'v' then N'Mã bộ phận <span class="Highlight">%s</span> đã được sửa hoặc xóa bởi người sử dụng khác.' else N'The department <span class="Highlight">%s</span> has been modified or deleted by another user.' end
+]]>
+      </text>
+    </command>
+
+    <command event="Inserting">
+      <text>
+        <![CDATA[
+if exists(select * from @@table where ma_bp = @ma_bp and ma_dvcs = @ma_dvcs)
+  begin
+    select 'ma_bp' as field, replace(@$exists, '%s', rtrim(@ma_bp)) as message
+    return
+  end
+
+if @bp_me <> ''
+  begin
+    if @ma_dvcs not in (select ma_dvcs from @@table where ma_bp = @bp_me and ma_dvcs = @ma_dvcs)
+      begin
+        select 'ma_dvcs' as field, @$unitConflict as message
+        return
+      end
+  end
+select @bac_bp = case when @bp_me = '' then 1 else isnull((select bac_bp from @@table where ma_bp = @bp_me and ma_dvcs = @ma_dvcs), 0) + 1 end
+]]>&WhenDepartmentInserting;<![CDATA[
+select @datetime0 = getdate(), @datetime2 = getdate(), @user_id0 = @@userID, @user_id2 = @@userID
+]]>
+      </text>
+    </command>
+
+    <command event="Inserted">
+      <text>
+        <![CDATA[
+if @@language = 'v' select space(2 * (case when @bac_bp > 0 then @bac_bp - 1 else 0 end)) + case @@language when 'v' then @ten_bp else @ten_bp2 end as ten
+  else select space(2 * (case when @bac_bp > 0 then @bac_bp - 1 else 0 end)) + case @@language when 'v' then @ten_bp else @ten_bp2 end as ten2
+]]>
+      </text>
+    </command>
+
+    <command event="Updating">
+      <text>
+        <![CDATA[
+if not exists(select * from @@table where ma_bp = $ma_bp.OldValue and ma_dvcs = $ma_dvcs.OldValue)
+  begin
+    select 'ma_bp' as field, replace(@$recordHasBeenChanged, '%s', rtrim($ma_bp.OldValue)) as message
+    return
+  end
+  
+if @ma_bp <> $ma_bp.OldValue
+  begin
+    if exists(select * from @@table where ma_bp = @ma_bp and ma_bp <> $ma_bp.OldValue and ma_dvcs = @ma_dvcs)
+      begin
+        select 'ma_bp' as field, replace(@$exists, '%s', rtrim(@ma_bp)) as message
+        return
+      end
+    if exists(select 1 from @@table where bp_me = $ma_bp.OldValue and ma_dvcs = $ma_dvcs.OldValue)
+      begin
+        select 'ma_bp' as field, replace(@$childConflict, '%s', rtrim($ma_bp.OldValue)) as message
+        return
+      end
+	  /*
+    if exists(select * from zcdmkh where bp_ref in (select bp_ref from @@table where ma_bp = $ma_bp.OldValue))
+      begin
+        select 'ma_bp' as field, replace(@$updateConflict, '%s', rtrim($ma_bp.OldValue)) as message
+        return
+      end
+	  */
+  end
+
+if @bp_me <> ''
+  begin
+    if @ma_dvcs not in (select ma_dvcs from @@table where ma_bp = @bp_me and ma_dvcs = @ma_dvcs)
+      begin
+        select 'ma_dvcs' as field, @$unitConflict as message
+        return
+      end
+  end
+  
+if exists(select 1 from @@table where bp_me <> @bp_me and ma_bp = $ma_bp.OldValue and ma_dvcs = $ma_dvcs.OldValue)
+  begin
+    declare @oldParentDept varchar(32)
+    select @oldParentDept = bp_me from @@table where ma_bp = $ma_bp.OldValue and ma_dvcs = $ma_dvcs.OldValue
+    if exists(select 1 from @@table where bp_me = $ma_bp.OldValue and ma_dvcs = $ma_dvcs.OldValue) begin
+      select 'bp_me' as field, @$changeConflict as message
+      return      
+    end
+  end
+declare @bac_bp int
+select @bac_bp = case when @bp_me = '' then 1 else isnull((select bac_bp from @@table where ma_bp = @bp_me and ma_dvcs = @ma_dvcs), 0) + 1 end
+]]>&WhenDepartmentUpdating;<![CDATA[
+]]>
+      </text>
+    </command>
+
+    <command event="Updated">
+      <text>
+        <![CDATA[
+update @@table set bac_bp = @bac_bp, datetime2 = getdate(), user_id2 = @@userID where ma_bp = @ma_bp and ma_dvcs = @ma_dvcs
+if @@language = 'v' select space(2 * (case when @bac_bp > 0 then @bac_bp - 1 else 0 end)) + case @@language when 'v' then @ten_bp else @ten_bp2 end as ten
+  else select space(2 * (case when @bac_bp > 0 then @bac_bp - 1 else 0 end)) + case @@language when 'v' then @ten_bp else @ten_bp2 end as ten2
+]]>
+      </text>
+    </command>
+
+    <command event="Deleting">
+      <text>
+        <![CDATA[
+declare @message nvarchar(255), @bp_ref varchar(128)
+select @message = replace(@$deleteConflict, '%s', rtrim(@ma_bp))
+/*
+if exists(select 1 from @@table where bp_me = @ma_bp) or exists(select * from zcdmkh where bp_ref in (select bp_ref from @@table where ma_bp = @ma_bp))
+  begin
+    select @message as message
+    return
+  end
+  */
+select @bp_ref = bp_ref from @@table where ma_bp = @ma_bp and ma_dvcs = @ma_dvcs
+]]>
+      </text>
+    </command>
+
+    <command event="Deleted">
+      <text>
+        <![CDATA[
+update @@sysDatabaseName..crmctquyenbp set r_access2 = replace(replace(r_access2, @bp_ref, ''), ',,', ',') where dbo.ff_Inlist(@bp_ref, r_access2) = 1 and ma_dvcs = @ma_dvcs
+update @@sysDatabaseName..crmquyenbp set r_access2 = replace(replace(r_access2, @bp_ref, ''), ',,', ',') where dbo.ff_Inlist(@bp_ref, r_access2) = 1
+]]>
+      </text>
+    </command>
+  </commands>
+
+  <script>
+    <text>
+      <![CDATA[
+function active$FormDepartment(f) {
+  f.add_onResponseComplete(on$FormDepartment$ResponseComplete);
+  init$FormDepartment(f);
+}
+function init$FormDepartment(f) {
+  if (f._action == 'New') {
+    f.getItem('stt2').value = f.getItem('ma_dvcs2').value = '';
+    f.getItem('ma_dvcs').value = f._unitCode;
+    f.getItem('ten_dvcs%l').value = f._unitName;
+  }
+  else {
+    f.getItem('stt2').value = f.getItem('stt').value;
+    f.getItem('bp_me2').value = f.getItem('bp_me').value;
+    f.getItem('ma_dvcs2').value = f.getItem('ma_dvcs').value;
+  }
+}
+function close$FormDepartment(f) {try {f.remove_onResponseComplete(on$FormDepartment$ResponseComplete)} catch (ex) {}}
+
+function onChange$FormDepartment$ParentDepartment(o) {o.parentForm.request('ParentDepartment', 'ParentDepartment', ['bp_me', ma_dvcs], o);}
+function on$FormDepartment$ResponseComplete(sender, e) {
+  var f = e.object, context = e.type.Context, result = e.type.Result;
+  switch (context) {
+    case 'ParentDepartment':
+      f.setItemControlBehavior('ma_dvcs', result[0].Value, result[1].Value, true);
+      break;
+    case 'Checking':
+      objectBehavior$Dir$Irregular.checkCode(f, 'ma_bp');
+      break;
+    default:
+      break;
+  }
+}
+]]>
+      &ScriptIrregular;
+    </text>
+  </script>
+
+  <response>
+    <action id="ParentDepartment">
+      <text>
+        <![CDATA[
+if exists(select 1 from crmbp where ma_bp = @bp_me and ma_dvcs = @ma_dvcs) begin
+  select ma_dvcs, case when @@language = 'v' then ten_dvcs else ten_dvcs2 end from dmdvcs
+  where ma_dvcs in (select ma_dvcs from crmbp where ma_bp = @bp_me and ma_dvcs = @ma_dvcs)
+  return
+end
+]]>
+      </text>
+    </action>
+  </response>
+
+</dir>

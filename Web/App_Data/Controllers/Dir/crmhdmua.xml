@@ -1,0 +1,929 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE dir [
+  <!ENTITY XMLWhenVoucherInit SYSTEM "..\Include\XML\WhenVoucherInit.xml">
+  <!ENTITY XMLWhenVoucherNavigating SYSTEM "..\Include\XML\WhenVoucherNavigating.xml">
+  <!ENTITY XMLWhenVoucherCopying SYSTEM "..\Include\XML\WhenVoucherCopying.xml">
+  <!ENTITY XMLWhenVoucherClosing SYSTEM "..\Include\XML\WhenVoucherClosing.xml">
+  <!ENTITY XMLGetVoucherNumber SYSTEM "..\Include\XML\GetVoucherNumber.xml">
+  <!ENTITY XMLGetExchangeRate SYSTEM "..\Include\XML\GetExchangeRate.xml">
+  <!ENTITY CommandWhenVoucherLoading SYSTEM "..\Include\Command\WhenVoucherLoading.txt">
+  <!ENTITY CommandWhenVoucherBeforeEdit SYSTEM "..\Include\Command\WhenVoucherBeforeEdit.txt">
+  <!ENTITY CommandWhenVoucherBeforeDelete SYSTEM "..\Include\Command\WhenVoucherBeforeDelete.txt">
+  <!ENTITY CommandRecordHasBeenChanged SYSTEM "..\Include\Command\RecordHasBeenChanged.txt">
+  <!ENTITY CommandCheckVoucherHandleBeforeSave SYSTEM "..\Include\Command\CheckVoucherHandleBeforeSave.txt">
+  <!ENTITY CommandCheckVoucherHandleBeforeSave_PVTran SYSTEM "..\Include\Command\CheckVoucherHandleBeforeSave_PVTran.txt">
+  <!ENTITY check_t_tt SYSTEM "..\Include\Command\check_t_tt.txt">
+  <!ENTITY CommandCheckVoucherHandleBeforeEdit SYSTEM "..\Include\Command\CheckVoucherHandleBeforeEdit.txt">
+  <!ENTITY CommandCheckVoucherHandleBeforeDelete SYSTEM "..\Include\Command\CheckVoucherHandleBeforeDelete.txt">
+  <!ENTITY CommandCheckLockedDate SYSTEM "..\Include\Command\CheckLockedDate.txt">
+  <!ENTITY CommandCheckVoucherNumber SYSTEM "..\Include\Command\CheckVoucherNumber.txt">
+  <!ENTITY CommandGetIdentityNumber SYSTEM "..\Include\Command\GetIdentityNumber.txt">
+  <!ENTITY CommandGetVoucherNumber SYSTEM "..\Include\Command\GetVoucherNumber.txt">
+  <!ENTITY CommandSetVoucherNumber SYSTEM "..\Include\Command\SetVoucherNumber.txt">
+  <!ENTITY CommandShowWarningMessage SYSTEM "..\Include\Command\ShowWarningMessage.txt">
+  <!ENTITY CommandQueryVoucherNumber SYSTEM "..\Include\Command\QueryVoucherNumber.txt">
+  <!ENTITY CommandScatterVoucherNumber SYSTEM "..\Include\Command\ScatterVoucherNumber.txt">
+  <!ENTITY CommandExternalFieldDeclare SYSTEM "..\Include\Command\ExternalFieldDeclare.txt">
+  <!ENTITY CommandExternalFieldSelect SYSTEM "..\Include\Command\ExternalFieldSelect.txt">
+  <!ENTITY CommandExternalFieldSet SYSTEM "..\Include\Command\ExternalFieldAssign.txt">
+  <!ENTITY CommandExternalFieldQuery SYSTEM "..\Include\Command\ExternalFieldQuery.txt">
+
+  <!ENTITY CommandCheckDetailInputVATInvoice SYSTEM "..\Include\Command\CheckDetailInputVATInvoice.txt">
+
+  <!ENTITY ScriptVoucherInit SYSTEM "..\Include\Javascript\VoucherInit.txt">
+  <!ENTITY ScriptVoucherNumber SYSTEM "..\Include\Javascript\VoucherNumber.txt">
+  <!ENTITY VoucherNumberLoading SYSTEM "..\Include\Javascript\WhenVoucherNumberLoading.txt">
+  <!ENTITY VoucherNumberScattering SYSTEM "..\Include\Javascript\WhenVoucherNumberScattering.txt">
+  <!ENTITY VoucherNumberReading SYSTEM "..\Include\Javascript\WhenVoucherNumberReading.txt">
+  <!ENTITY ScriptCurrency SYSTEM "..\Include\Javascript\Currency.txt">
+  <!ENTITY CurrencyDateChanged SYSTEM "..\Include\Javascript\WhenCurrencyDateChanged.txt">
+  <!ENTITY CurrencyResponse SYSTEM "..\Include\Javascript\WhenCurrencyResponse.txt">
+  <!ENTITY ScriptActiveVoucher SYSTEM "..\Include\Javascript\ActiveVoucher.txt">
+  <!ENTITY ScriptScatterVoucher SYSTEM "..\Include\Javascript\ScatterVoucher.txt">
+  <!ENTITY ScriptCloseVoucher SYSTEM "..\Include\Javascript\CloseVoucher.txt">
+  <!ENTITY UpdateCurrentStock SYSTEM "..\Include\Command\UpdateCurrentStock.txt">
+  <!ENTITY ReviseCurrentStock SYSTEM "..\Include\Command\ReviseCurrentStock.txt">
+  <!ENTITY DeleteCurrentStock SYSTEM "..\Include\Command\DeleteCurrentStock.txt">
+
+  <!ENTITY ScriptVerifyInputVATInvoiceNumber SYSTEM "..\Include\Javascript\VerifyInputVATInvoiceNumber.txt">
+
+  <!ENTITY BeforeVoucherUpdate "if exists(select 1 from @@prime$partition$previous where stt_rec = @stt_rec and status &lt;&gt; '0') exec FastBusiness$Voucher$BeforeUpdate$PM @@prime$partition$previous, d71$$partition$previous, @stt_rec, @@action, @@userID">
+  <!ENTITY AfterVoucherUpdate "if exists(select 1 from @@prime$partition$current where stt_rec = @stt_rec and status &lt;&gt; '0') exec FastBusiness$Voucher$AfterUpdate$PM @@prime$partition$current, d71$$partition$current, @stt_rec, @@action, @@userID">
+
+  <!ENTITY DetailVariable "@d71">
+  <!ENTITY DetailTable "d71$$partition$current">
+  <!ENTITY StockType "1">
+  <!ENTITY DeclareStock "declare @stock tinyint
+select @stock = case when @loai_ct = '2' then 1 else 0 end">
+  <!ENTITY DeclareStock4Delete "declare @stock tinyint
+select @stock = case when loai_ct = '2' then 1 else 0 end from m71$$partition$previous where stt_rec = @stt_rec">
+  <!ENTITY DeclarePost "declare @post bit
+select @post = case when @status = 0 then 0 else 1 end">
+
+  <!ENTITY f ", @supplier as ten_ncc, @address as dia_chi, @taxID as ma_so_thue">
+  <!ENTITY AfterUpdate "
+exec FastBusiness$App$Voucher$UpdateInquiryTable @@id, '@@inquiry$partition$current', '@@prime$partition$current', 'd71$$partition$current', 'stt_rec', @stt_rec, @@operation
+exec FastBusiness$App$Voucher$UpdateGrandTable @@id, '@@master', '@@prime$partition$current', 'stt_rec', @stt_rec
+exec FastBusiness$App$Voucher$UpdateGeneral @@id, 'm71$$partition$current', 'd71$$partition$current', '@@inquiry$partition$current', '@@prime$partition$current', @stt_rec
+
+declare @allocateKey varchar(128), @roundInvoice varchar(32), @f tinyint, @b tinyint
+select @allocateKey = 'stt_rec = ''' + @stt_rec + '''', @roundInvoice = 'm_round_tien_nt'
+select @f = rtrim(val) from options where name = 'm_round_gia_nt'
+select @b = rtrim(val) from options where name = 'm_round_gia'
+
+if exists(select 1 from options where name = 'm_ma_nt0' and val = @ma_nt) select @roundInvoice = 'm_round_tien', @f = @b
+exec FastBusiness$App$Allocate$Number 'd71$$partition$current', @t_thue_nt, 'thue_nt', @roundInvoice, 'tien_nt0', @allocateKey, 'stt_rec0'
+exec FastBusiness$App$Allocate$Number 'd71$$partition$current', @t_thue, 'thue', 'm_round_tien', 'tien0', @allocateKey, 'stt_rec0'
+exec FastBusiness$App$Allocate$Charge 'r60$$partition$current', 'd71$$partition$current', @allocateKey, 'tien0', @roundInvoice
+
+update d71$$partition$current set tien = tien_hang + cp, tien_nt = tien_hang_nt + cp_nt where stt_rec = @stt_rec
+update d71$$partition$current set tt = tien + thue, tt_nt = tien_nt + thue_nt where stt_rec = @stt_rec
+update d71$$partition$current set gia = case when so_luong = 0 then 0 else round(tien/so_luong, @b) end, gia_nt = case when so_luong = 0 then 0 else round(tien_nt/so_luong, @f) end where stt_rec = @stt_rec
+update m71$$partition$current set t_tien = d.t_tien, t_tien_nt = d.t_tien_nt, t_tt = d.t_tt, t_tt_nt = d.t_tt_nt from (select sum(tien) as t_tien, sum(tien_nt) as t_tien_nt, sum(tt) as t_tt, sum(tt_nt) as t_tt_nt from d71$$partition$current where stt_rec = @stt_rec) d where stt_rec = @stt_rec
+">
+
+  <!ENTITY Post "
+declare @group varchar(1024), @glMaster nvarchar(256) , @glDetail nvarchar(256)
+select @glMaster = rtrim(val) from options where name = 'm_gl_master'
+select @glDetail = rtrim(val) from options where name = 'm_gl_detail'
+select @group = rtrim(groupby) from @@sysDatabaseName..voucherinfo where ma_ct = @@id
+
+if @loai_ct = '2' begin
+  update d71$$partition$current set stt_rec_dh = '', stt_rec0dh = '' where stt_rec = @stt_rec and stt_rec_pn &lt;&gt; ''
+  update d71$$partition$current set stt_rec_pn = '', stt_rec0pn = '', pn_so = '', pn_ln = 0 where stt_rec = @stt_rec
+end
+
+if @status &lt;&gt; '0' begin
+  insert into ctgt30 select * from r30$$partition$current where stt_rec = @stt_rec
+
+  exec FastBusiness$Voucher$Posting$Inventory 'm71$$partition$current', 'd71$$partition$current', 'r70$$partition$current', @stt_rec, @@id, 
+    'ct_dc, px_gia_dd, pn_gia_tb, gia_nt21, gia21, gia_nt2, gia2, tien_nt2, tien2, cp_thue_yn, ck_nt, ck', 
+    'so_seri, ma_khon, ma_vi_trin, tk_gv, tk_dt, tk_ck, so_dh2, so_dh3, ma_nvbh, ma_nv, stt_rec_px, stt_rec0px, stt_rec_dc, so_seri0', 
+    'tk_du = c.tk, ma_nx = c.tk, gia_nt1 = b.gia_nt, gia_nt01 = b.gia_nt0, gia1 = b.gia, gia01 = b.gia0, tien_xuat = 0, tien_nt_x = 0, tien_nhap = b.tien, tien_nt_n = b.tien_nt', 
+    'update #in set ma_nx = b.ma_nx from #in a join dmnx b on a.ma_nx = b.tk where b.ma_nx is not null',
+    @stock, &StockType;
+  
+  if @status = '1' begin
+	  insert into p00$000000 select stt_rec, ma_dvcs, ma_ct, ngay_ct, so_ct, t_tt_nt, t_tt, ma_nt, ty_gia, dien_giai, datetime2, user_id2 from @@prime$partition$current where stt_rec = @stt_rec
+	  exec fs_PostPVTran 'm71$$partition$current', 'd71$$partition$current', @glMaster, @glDetail, @stt_rec, @group, 1
+	end else begin  
+    exec fs_PostPVTran 'm71$$partition$current', 'd71$$partition$current', @glMaster, @glDetail, @stt_rec, @group, 2
+    exec fs20_AfterUpdateGL @stt_rec, 'm71$$partition$current', 'd71$$partition$current', @@id, @@userID
+    insert into r00$$partition$current select * from ct00 where stt_rec = @stt_rec
+	if @t_chi+@t_chi_nt &lt;&gt; 0 begin
+		exec zcchuyenphieuchi 'm71$$partition$current', 'd71$$partition$current', 'm51$$partition$current', 'd51$$partition$current', 'm51$$partition$previous', 'd51$$partition$previous', @stt_rec, @oldsoct
+	end else begin
+		update m71$$partition$current set stt_rec_chi = 'A000000000PC1' where stt_rec = @stt_rec
+	end
+  end
+  insert into r90$$partition$current select * from ct90 where stt_rec = @stt_rec
+end">
+
+  <!ENTITY Delete "
+delete ct00 where stt_rec = @stt_rec
+delete ct70 where stt_rec = @stt_rec
+delete ct90 where stt_rec = @stt_rec
+delete ctgt30 where stt_rec = @stt_rec
+delete cttt30 where left(stt_rec, 10) = left(@stt_rec, 10)
+delete p00$000000 where stt_rec = @stt_rec
+
+if '$partition$current' &lt;&gt; '$partition$previous' begin
+  delete r00$$partition$previous where stt_rec = @stt_rec
+  delete r70$$partition$previous where stt_rec = @stt_rec
+  delete r90$$partition$previous where stt_rec = @stt_rec
+end else begin
+  delete r00$$partition$current where stt_rec = @stt_rec
+  delete r70$$partition$current where stt_rec = @stt_rec
+  delete r90$$partition$current where stt_rec = @stt_rec
+end">
+<!ENTITY DeletePC "
+
+Declare @stt_rec_chi varchar(13)
+select @stt_rec_chi = stt_rec_chi from m71$$partition$current where stt_rec = @stt_rec		
+delete ct00 where stt_rec = @stt_rec_chi
+delete cttt20 where stt_rec = @stt_rec_chi
+delete cttt30 where stt_rec = @stt_rec_chi
+delete cttt50 where stt_rec = @stt_rec_chi
+delete m51$000000  where stt_rec = @stt_rec_chi
+delete d51$000000  where stt_rec = @stt_rec_chi
+delete i51$000000  where stt_rec = @stt_rec_chi
+delete c51$000000  where stt_rec = @stt_rec_chi
+delete m56$000000  where stt_rec = @stt_rec_chi
+delete d56$000000  where stt_rec = @stt_rec_chi
+delete i56$000000  where stt_rec = @stt_rec_chi
+delete c56$000000  where stt_rec = @stt_rec_chi
+delete p00$000000 where stt_rec = @stt_rec_chi
+
+if '$partition$current' &lt;&gt; '$partition$previous' begin
+	delete r00$$partition$previous where stt_rec = @stt_rec_chi
+	delete m51$$partition$previous  where stt_rec = @stt_rec_chi
+	delete d51$$partition$previous  where stt_rec = @stt_rec_chi	
+	delete i51$$partition$previous  where stt_rec = @stt_rec_chi
+	delete m56$$partition$previous  where stt_rec = @stt_rec_chi
+	delete d56$$partition$previous  where stt_rec = @stt_rec_chi	
+	delete i56$$partition$previous  where stt_rec = @stt_rec_chi	
+end else begin
+	delete r00$$partition$current where stt_rec = @stt_rec_chi
+	delete m51$$partition$current  where stt_rec = @stt_rec_chi
+	delete d51$$partition$current  where stt_rec = @stt_rec_chi
+	delete i51$$partition$current  where stt_rec = @stt_rec_chi
+	delete m56$$partition$current  where stt_rec = @stt_rec_chi
+	delete d56$$partition$current  where stt_rec = @stt_rec_chi
+	delete i56$$partition$current  where stt_rec = @stt_rec_chi	
+end">
+]>
+
+<dir table="m71$000000" code="stt_rec" order="ngay_ct, so_ct" id="PNA" type="Voucher" uniKey="true" navigation="true" name="cookie" check="true" xmlns="urn:schemas-Sthink-company:data-dir">
+  <title v="hóa đơn" e="Invoice"></title>
+  <partition table="c71$000000" prime="m71$" inquiry="i71$" field="ngay_ct" expression="convert(char(6), {0}, 112)" increase="dateadd(month, 1, {0})" default="000000"/>
+  <fields>
+    <field name="stt_rec" isPrimaryKey="true" readOnly="true" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ma_kh" allowNulls="false">
+      <header v="Mã ncc" e="Supplier"></header>
+      <items style="AutoComplete" controller="Customer" reference="ten_kh%l" key="status = '1' and cc_yn = 1" check="cc_yn = 1" information="ma_kh$dmkh.ten_kh%l" new="Default" row="1"/>
+      <clientScript><![CDATA[onchange="onChange$Voucher$Customer(this);"]]></clientScript>
+    </field>
+    <field name="ten_kh%l" readOnly="true" external="true" defaultValue="''">
+      <header v="" e=""></header>
+    </field>
+    <field name="ong_ba">
+      <header v="Người giao hàng" e="Delivered by"></header>
+    </field>
+    <field name="ma_gd" allowNulls="false" clientDefault="Default" defaultValue="2">
+      <header v="Mã giao dịch" e="Transaction Code"></header>
+      <items style="AutoComplete" controller="TransactionCode" reference="ten_gd%l" key="ma_ct = @@id and status = '1'" check="ma_ct = @@id" information="ma_gd$dmmagd.ten_gd%l" row="1"/>
+      <clientScript><![CDATA[onchange="onChange$Voucher$Transaction(this);"]]></clientScript>
+    </field>
+    <field name="ten_gd%l" readOnly="true" external="true" clientDefault="Default" defaultValue="''">
+      <header v="" e=""></header>
+    </field>
+    <field name="loai_ct" hidden="true" width="0" clientDefault="Default">
+      <header v="" e=""></header>
+    </field>
+
+    <field name="dien_giai">
+      <header v="Diễn giải" e="Memo"></header>
+    </field>
+    <field name="tk" allowNulls="false">
+      <header v="Tài khoản có" e="Credit Account"></header>
+      <items style="AutoComplete" controller="Account" reference="ten_tk%l" key="loai_tk = 1 and status = '1' and tk not like '112%'" check="loai_tk = 1" information="tk$dmtk.ten_tk%l" new="Default"/>
+	  <clientScript><![CDATA[onchange="onChange$Voucher$DebitAccount(this);"]]></clientScript>
+	</field>
+    <field name="ten_tk%l" readOnly="true" external="true" defaultValue="''">
+      <header v="" e=""></header>
+    </field>
+    <field name="ma_tt" categoryIndex="-1">
+      <header v="Mã thanh toán" e="Debit Term"></header>
+      <footer v="Mã th&lt;u&gt;a&lt;/u&gt;nh toán" e="Debit &lt;u&gt;T&lt;/u&gt;erm"></footer>
+      <items style="AutoComplete" controller="Term" reference="ten_tt%l" key="status = '1'" check="1 = 1" information="ma_tt$dmtt.ten_tt%l"/>
+    </field>
+    <field name="ten_tt%l" readOnly="true" external="true" defaultValue="''" categoryIndex="-1">
+      <header v="" e=""></header>
+    </field>
+
+    <field name="so_ct0" dataFormatString="@upperCaseFormat" align="right">
+      <header v="Số hóa đơn" e="Invoice Number"></header>
+      <items style="Mask"/>
+    </field>
+    <field name="so_seri0" clientDefault="Default" dataFormatString="@upperCaseFormat" align="right" >
+      <header v="Ký hiệu" e="Serial Number"></header>
+      <items style="Mask"/>
+    </field>
+    <field name="ngay_ct0" type="DateTime" dataFormatString="@datetimeFormat">
+      <header v="Ngày hóa đơn" e="Invoice Date"></header>
+	  <clientScript><![CDATA[onchange="onChange$Voucher$DateInvoice(this);"]]></clientScript>
+    </field>
+
+    <field name="ma_nk" clientDefault="Default" inactivate="true">
+      <header v="" e=""></header>
+      <items style="AutoComplete" controller="VoucherBook" reference="ten_nk%l" key="status = '1' and ma_nk in (select ma_nk from v20dmctnk where ma_ct = @@id and (lstuser = '' or charindex(rtrim(@@userName) + ',', replace(lstuser, ' ', '') + ',') > 0))" check="1=1" information="ma_nk$v20dmnk.ten_nk%l"/>
+      <handle reference="so_ct"/>
+    </field>
+    <field name="ten_nk%l" clientDefault="Default" readOnly="true" hidden="true" external="true" defaultValue="''">
+      <header v="" e=""></header>
+    </field>
+    <field name="so_ct" dataFormatString="@upperCaseFormat" align="right" allowNulls="false">
+      <header v="Số chứng từ" e="Voucher Number"></header>
+      <items style="Mask"/>
+    </field>
+    <field name="ngay_lct" type="DateTime" dataFormatString="@datetimeFormat" align="left" allowNulls="false">
+      <header v="Ngày lập" e="Voucher Date"></header>
+    </field>
+    <field name="ngay_ct" type="DateTime" dataFormatString="@datetimeFormat" align="left" allowNulls="false" inactivate="true">
+      <header v="Ngày hạch toán" e="Posting Date"></header>
+    </field>
+    <field name="ma_nt" clientDefault="Default" allowNulls="false" inactivate="true">
+      <header v="Mã nt" e="Currency"></header>
+      <items style="AutoComplete" controller="Currency" reference="ten_nt%l" key="status = '1'" check="1=1" information="ma_nt$dmnt.ten_nt%l"/>
+    </field>
+    <field name="ten_nt%l" clientDefault="Default" readOnly="true" hidden="false" external="true" defaultValue="''">
+      <header v="" e=""></header>
+    </field>
+    <field name="ty_gia" type="Decimal" dataFormatString="@exchangeRateInputFormat" clientDefault="Default" defaultValue="1">
+      <header v="Tỷ giá" e="Ex. Rate"></header>
+      <items style="Numeric"/>
+    </field>
+
+    <field name="status" inactivate="true" clientDefault="2">
+      <header v="Trạng thái" e="Status"></header>
+      <items style="DropDownList">
+        <item value="0">
+          <text v="0. Lập chứng từ" e="0. No Action"/>
+        </item>
+        <item value="1">
+          <text v="1. Chuyển KTTH" e="1. Release Later"/>
+        </item>
+        <item value="2">
+          <text v="2. Chuyển sổ cái" e="2. Release"/>
+        </item>
+      </items>
+    </field>
+
+    <field name="d71" allowNulls="false" external="true" clientDefault="0" defaultValue="0" rows="132" filterSource="Tidy" categoryIndex="1">
+      <header v="" e=""></header>
+      <label v="Chi tiết" e="Detail"></label >
+      <items style="Grid" controller="PVDetail" row="1">
+        <item value="ForeignKey">
+          <text v ="String: stt_rec, stt_rec" e="String: stt_rec, stt_rec"></text>
+        </item>
+      </items>
+    </field>
+
+    <field name="r60" allowNulls="true" external="true" clientDefault="0" defaultValue="0" rows="132" filterSource="Tidy" categoryIndex="2">
+      <header v="" e=""></header>
+      <label v="Chi phí" e="Charge"></label >
+      <items style="Grid" controller="PVCharge" row="1">
+        <item value="ForeignKey">
+          <text v ="String: stt_rec, stt_rec" e="String: stt_rec, stt_rec"></text>
+        </item>
+      </items>
+    </field>
+
+    <field name="r30" allowNulls="true" external="true" clientDefault="0" defaultValue="0" rows="132" filterSource="Tidy" categoryIndex="3">
+      <header v="" e=""></header>
+      <label v="Thuế" e="Tax"></label >
+      <items style="Grid" controller="PVTax" row="1">
+        <item value="ForeignKey">
+          <text v ="String: stt_rec, stt_rec" e="String: stt_rec, stt_rec"></text>
+        </item>
+      </items>
+    </field>
+
+	<field name="t_chi_nt" type="Decimal" dataFormatString="@foreignCurrencyAmountInputFormat" clientDefault="0" categoryIndex="-1" disabled="false">
+      <header v="Chi tiền" e="FC Cash Receipt"></header>
+      <items style="Numeric"/>
+	  <clientScript><![CDATA[onchange="onChange$Voucher$ForeignCurrencyChi(this);" onfocusin="onLoad$Voucher$ForeignCurrencyChi(this);"]]></clientScript>
+    </field>
+    <field name="t_chi" type="Decimal" dataFormatString="@baseCurrencyAmountInputFormat" clientDefault="0" categoryIndex="-1" disabled="true">
+      <header v="Thu tiền" e="Cash Receipt"></header>
+      <items style="Numeric"/>
+    </field>
+    <field name="t_so_luong" type="Decimal" dataFormatString="@quantityInputFormat" clientDefault="0" categoryIndex="-1" disabled="true">
+      <header v="Tổng cộng" e="Amount"></header>
+      <items style="Numeric"/>
+    </field>
+    <field name="t_tien_nt0" type="Decimal" dataFormatString="@foreignCurrencyAmountInputFormat" clientDefault="0" categoryIndex="-1" disabled="true">
+      <header v="" e=""></header>
+      <items style="Numeric"/>
+    </field>
+    <field name="t_tien0" type="Decimal" dataFormatString="@baseCurrencyAmountInputFormat" clientDefault="0" categoryIndex="-1" disabled="true">
+      <header v="" e=""></header>
+      <items style="Numeric"/>
+    </field>
+    <field name="t_cp_nt" type="Decimal" dataFormatString="@foreignCurrencyAmountInputFormat" clientDefault="0" categoryIndex="-1" disabled="true">
+      <header v="Chi phí" e="Charges"></header>
+      <items style="Numeric"/>
+    </field>
+    <field name="t_cp" type="Decimal" dataFormatString="@baseCurrencyAmountInputFormat" clientDefault="0" categoryIndex="-1" disabled="true">
+      <header v="" e=""></header>
+      <items style="Numeric"/>
+    </field>
+    <field name="t_thue_nt" type="Decimal" dataFormatString="@foreignCurrencyAmountInputFormat" clientDefault="0" categoryIndex="-1" disabled="true">
+      <header v="Tiền thuế" e="Tax Amount"></header>
+      <items style="Numeric"/>
+    </field>
+    <field name="t_thue" type="Decimal" dataFormatString="@baseCurrencyAmountInputFormat" clientDefault="0" categoryIndex="-1" disabled="true">
+      <header v="" e=""></header>
+      <items style="Numeric"/>
+    </field>
+    <field name="t_tt_nt" type="Decimal" dataFormatString="@foreignCurrencyAmountInputFormat" clientDefault="0" categoryIndex="-1" disabled="true">
+      <header v="Tổng thanh toán" e="Total Amount"></header>
+      <items style="Numeric"/>
+    </field>
+    <field name="t_tt" type="Decimal" dataFormatString="@baseCurrencyAmountInputFormat" clientDefault="0" categoryIndex="-1" disabled="true">
+      <header v="" e=""></header>
+      <items style="Numeric"/>
+    </field>
+
+    <field name="so_ct_goc" type="Int32" dataFormatString="##0" clientDefault="0" external="true" defaultValue="0" allowContain="true" categoryIndex="9">
+      <header v="Kèm theo" e="Include"></header>
+      <items style="Numeric"/>
+    </field>
+    <field name="dien_giai_ct_goc" external="true" defaultValue="''" allowContain="true" maxLength="-110" categoryIndex="9">
+      <header v="Chứng từ gốc" e="Document(s)"></header>
+    </field>
+	<field name="fcode1" categoryIndex="9">
+              <header v="Quyển phiếu chi" e="Book"></header>
+      <items style="AutoComplete" controller="VoucherBook" reference="ten_fcode1%l" key="status = '1' and ma_nk in (select ma_nk from v20dmctnk where ma_ct = 'PC1' and (lstuser = '' or charindex(rtrim(@@userName) + ',', replace(lstuser, ' ', '') + ',') > 0))" check="1 = 1" information="ma_nk$v20dmnk.ten_nk%l"/>
+    </field>
+    <field name="ten_fcode1%l" readOnly="true" external="true" defaultValue="''" hidden="false" categoryIndex="9">
+      <header v="" e=""></header>
+    </field>
+	 <field name="dien_giai_chi"  categoryIndex="9" clientDefault="Chi tiền hóa đơn mua hàng">
+      <header v="Diễn giải phiếu thu" e="Document(s) Receipt"></header>
+    </field>
+	
+    <field name="fcode3" categoryIndex="-1">
+      <header v="Tài khoản chi" e="Debit Account"></header>
+      <items style="AutoComplete" controller="Account" reference="ten_fcode3%l" key="loai_tk = 1 and status = '1' and (tk like '111%' or tk like '112%')" check="loai_tk = 1" information="tk$dmtk.ten_tk%l" new="Default"/>
+    </field>
+    <field name="ten_fcode3%l" readOnly="true" external="true" defaultValue="''">
+      <header v="" e=""></header>
+    </field>		
+	
+    <field name="ma_dvcs" hidden="true" readOnly="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="cookie" external="true" hidden="true" readOnly="true" defaultValue="''" allowContain="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ten_ncc" external="true" hidden="true" readOnly="true" defaultValue="''" allowContain="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="dia_chi" external="true" hidden="true" readOnly="true" defaultValue="''" allowContain="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ma_so_thue" external="true" hidden="true" readOnly="true" defaultValue="''" allowContain="true">
+      <header v="" e=""></header>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Dir" height="190" anchor="10" split="10">
+      <item value="120, 70, 30, 21, 120, 15, 100, 15, 120, 0, 15, 70, 42, 15, 120, 0"/>
+      <item value="1101000000-10011: [ma_kh].Label, [ma_kh], [ten_kh%l], [so_ct].Label, [so_ct], [ma_nk]"/>
+      <item value="1100000000-10011: [ong_ba].Label, [ong_ba], [ngay_lct].Label, [ngay_lct], [stt_rec]"/>
+      <item value="1101000000-10010: [ma_gd].Label, [ma_gd], [ten_gd%l], [ngay_ct].Label, [ngay_ct]"/>
+      <item value="1101000000-11010: [tk].Label, [tk], [ten_tk%l], [ty_gia].Label, [ma_nt], [ty_gia]"/>
+      <item value="110---1-1--11000: [so_ct0].Label, [so_ct0], [so_seri0].Label, [so_seri0], [status].Label, [status]"/>
+      <item value="110---------1111: [ngay_ct0].Label, [ngay_ct0], [ma_dvcs], [ten_ncc], [dia_chi], [ma_so_thue]"/>
+      <item value="1100000000-----1: [dien_giai].Label, [dien_giai], [loai_ct]"/>
+
+      <item value="1: [d71]"/>
+      <item value="1: [r30]"/>
+      <item value="1: [r60]"/>
+
+      
+	  <item value="1101000-1010-1-: [fcode3].Label, [fcode3], [ten_fcode3%l], [t_chi_nt].Label, [t_chi_nt], [t_chi]"/>
+	  <item value="-----10-1010-1-: [t_so_luong].Label, [t_so_luong], [t_tien_nt0], [t_tien0]"/>
+      <item value="--------1-10-1-: [t_cp_nt].Label, [t_cp_nt], [t_cp]"/>
+      <item value="--------1-10-1-: [t_thue_nt].Label, [t_thue_nt], [t_thue]"/>
+      <item value="1101000-1-10-11: [ma_tt].Footer, [ma_tt], [ten_tt%l], [t_tt_nt].Label, [t_tt_nt], [t_tt], [cookie]"/>
+
+      <item value="11: [so_ct_goc].Label, [so_ct_goc]"/>
+      <item value="1100: [dien_giai_ct_goc].Label, [dien_giai_ct_goc]"/>
+	  <item value="110: [fcode1].Label, [fcode1], [ten_fcode1%l]"/>
+      <item value="1100: [dien_giai_chi].Label, [dien_giai_chi]"/>
+
+      <categories>
+        <category index="1" columns="880" anchor="1">
+          <header v="Chi tiết" e="Detail"/>
+        </category>
+        <category index="2" columns="880" anchor="1">
+          <header v="Chi phí" e="Charges"/>
+        </category>
+        <category index="3" columns="880" anchor="1">
+          <header v="Thuế" e="Tax"/>
+        </category>
+        <category index="9" columns="120, 120, 237, 120, 8, 58, 70, 15, 120, 0, 0, 0" anchor="3" split="5">
+          <header v="Khác" e="Include"/>
+        </category>
+        <category index="-1" columns="120, 70, 30, 21, 120, 15, 100, 15, 120, 15, 58, 42, 15, 120, 0" anchor="6">
+          <header v="" e=""/>
+        </category>
+      </categories>
+    </view>
+  </views>
+
+  <commands>
+    &XMLWhenVoucherInit;
+
+    <command event="Loading">
+      <text>
+        &CommandWhenVoucherLoading;
+        &CommandGetVoucherNumber;
+        <![CDATA[
+declare @message nvarchar(4000), @Tk_tmmd NVARCHAR(256)
+select @Tk_tmmd = Tk_tmmd from dmdvcskb where ma_dvcs = @@unit
+]]>&CommandQueryVoucherNumber;<![CDATA[ + ';this._Tktmmd = ' + @Tk_tmmd + ';set$ViewPanelCustomerID(this);active$Voucher$(this);']]>
+        &CommandCheckVoucherHandleBeforeEdit;
+        &CommandWhenVoucherBeforeEdit;
+        <![CDATA[
+declare @dg_chi nvarchar(256)
+select @dg_chi = dg_chi from dmdvcskb where ma_dvcs = @@unit
+select 'this._dg=''' + rtrim(@dg_chi) + ''';'+@message as message
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Scattering">
+      <text>
+        &CommandGetVoucherNumber;
+        <![CDATA[
+declare @message nvarchar(4000)
+]]>&CommandScatterVoucherNumber;<![CDATA[ + ';set$ViewPanelCustomerID(this);scatter$Voucher$(this);']]>
+        &CommandCheckVoucherHandleBeforeEdit;
+        &CommandWhenVoucherBeforeEdit;
+        <![CDATA[
+select @message as message
+return
+]]>
+      </text>
+    </command>
+
+    &XMLWhenVoucherNavigating;
+
+    <command event="InitExternalFields">
+      <text>
+        &CommandExternalFieldDeclare;<![CDATA[, @customerID varchar(32), @supplier nvarchar(512), @address nvarchar(512), @taxID varchar(32)]]>
+        &CommandExternalFieldSelect;<![CDATA[, @customerID = ma_kh from @@prime$partition$current where stt_rec = @stt_rec
+select @supplier = ten_kh, @address = dia_chi, @taxID = ma_so_thue from dmkh where ma_kh = @customerID]]>
+        &CommandExternalFieldSet;
+        <![CDATA[
+declare @documentNumber int, @documentNote nvarchar(511)
+select @documentNumber = so_ct_goc, @documentNote = dien_giai_ct_goc from v00$$partition$current where stt_rec = @stt_rec
+]]>&CommandExternalFieldQuery;&f;<![CDATA[, isnull(@documentNumber, 0) as so_ct_goc, isnull(@documentNote, '') as dien_giai_ct_goc
+return
+]]>
+      </text>
+    </command>
+
+    &XMLWhenVoucherCopying;
+    &XMLWhenVoucherClosing;
+
+    <command event="Declare">
+      <text>
+        <![CDATA[
+declare @$updateConflict nvarchar(512), @$deleteConflict nvarchar(512), @oldsoct CHAR(12)
+select @$updateConflict = case when @@language = 'v' then N'Đã có chứng từ thanh toán cho hóa đơn này, không thể sửa được.' else N'Can not edit this voucher, It was received or paid.' end
+select @$deleteConflict = case when @@language = 'v' then N'Đã có chứng từ thanh toán cho hóa đơn này, không thể xóa được.' else N'Can not delete this voucher, It was received or paid.' end
+set @oldsoct = ''
+]]>
+      </text>
+    </command>
+
+    <command event="Inserting">
+      <text>
+        &CommandCheckLockedDate;
+        &CommandCheckVoucherHandleBeforeSave;
+		&CommandCheckVoucherHandleBeforeSave_PVTran;
+		&check_t_tt;
+		 <![CDATA[
+ Update @d71 set gc_td1 = '' where ma_vt in (select ma_vt from dmvt where sua_ten_vt = 0)
+ ]]>
+		<![CDATA[
+if @t_chi <> 0 and @t_chi > @t_tt begin
+	select case when @@language = 'V' then N'Chi tiền mặt phải nhỏ hơn hoặc bằng tổng thanh toán' else N'Cash must be less than or equal to total payment' end as message
+	return
+end
+if (@t_chi_nt + @t_chi) <> 0 and @fcode3 = '' and @tk not like '111%' begin
+	select case when @@language = 'V' then N'Chi tiền qua công nợ phải chọn tài khoản chi tiền' else N'Spending money through debt must choose a payment account' end as message
+	return
+end
+if @tk like '111%' begin
+	Set @t_chi = @t_tt
+	Set @t_chi_nt = @t_tt_nt
+end
+]]>
+        &CommandCheckVoucherNumber;
+        &CommandCheckDetailInputVATInvoice;
+        &CommandGetIdentityNumber;
+        <![CDATA[
+select @ma_dvcs = @@unit, @ma_ct = @@id, @datetime0 = getdate(), @datetime2 = getdate(), @user_id0 = @@userID, @user_id2 = @@userID
+update @d71 set stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, tien_hang = tien0, tien_hang_nt = tien_nt0
+update @r60 set stt_rec = @stt_rec, ma_ct = @ma_ct, loai_ct = @loai_ct, ngay_ct = @ngay_ct, ngay_lct = @ngay_lct, so_ct = @so_ct, ma_dvcs = @ma_dvcs, status = @status, datetime0 = @datetime0, datetime2 = @datetime2, user_id0 = @user_id0, user_id2 = @user_id2
+update @r30 set stt_rec = @stt_rec, ma_ct = @ma_ct, loai_ct = @loai_ct, ngay_ct = @ngay_ct, ngay_lct = @ngay_lct, so_ct = @so_ct, ma_dvcs = @ma_dvcs, ma_nt = @ma_nt, ty_gia = @ty_gia, tk_du = @tk, status = @status, datetime0 = @datetime0, datetime2 = @datetime2, user_id0 = @user_id0, user_id2 = @user_id2
+]]>
+      </text>
+    </command>
+
+    <command event="Inserted">
+      <text>
+        <![CDATA[
+insert into d71$$partition$current select * from @d71
+insert into r60$$partition$current select * from @r60
+insert into r30$$partition$current select * from @r30
+if @$so_ct_goc <> 0 or @$dien_giai_ct_goc <> '' insert into v00$$partition$current(stt_rec, so_ct_goc, dien_giai_ct_goc) select @stt_rec, @$so_ct_goc, @$dien_giai_ct_goc
+]]>
+        &AfterUpdate;
+        &DeclareStock;
+        &DeclarePost;
+        &UpdateCurrentStock;
+        &Post;
+        &AfterVoucherUpdate;
+        <![CDATA[
+exec FastBusiness$App$IncreaseVoucherNumber @ma_nk, @@id, @so_ct
+]]>&CommandShowWarningMessage;<![CDATA[, @stt_rec as stt_rec, @@unit as ma_dvcs else
+select @stt_rec as stt_rec, @@unit as ma_dvcs
+return
+]]>
+      </text>
+    </command>
+
+    <command event="Updating">
+      <text>
+	 <![CDATA[
+	 if '$partition$current' <> '$partition$previous' begin
+		select @oldsoct = isnull(so_ct,'') from ct00 where stt_rec = (select stt_rec_chi from @@prime$partition$previous where stt_rec = @stt_rec)
+	 end else begin
+		select @oldsoct = isnull(so_ct,'') from ct00 where stt_rec = (select stt_rec_chi from @@prime$partition$current where stt_rec = @stt_rec)
+	 end
+	 ]]>	  
+	  
+		&DeletePC;
+        &CommandRecordHasBeenChanged;
+        &CommandCheckVoucherHandleBeforeSave;
+		&CommandCheckVoucherHandleBeforeSave_PVTran;
+		&check_t_tt;
+			   <![CDATA[
+ Update @d71 set gc_td1 = '' where ma_vt in (select ma_vt from dmvt where sua_ten_vt = 0)
+ ]]>
+		<![CDATA[
+if @t_chi <> 0 and @t_chi > @t_tt begin
+	select case when @@language = 'V' then N'Thu tiền mặt phải nhỏ hơn hoặc bằng tổng thanh toán' else N'Cash must be less than or equal to total payment' end as message
+	return
+end
+if (@t_chi_nt + @t_chi) <> 0 and @fcode3 = '' and @tk not like '111%' begin
+	select case when @@language = 'V' then N'Chi tiền qua công nợ phải chọn tài khoản chi tiền' else N'Spending money through debt must choose a payment account' end as message
+	return
+end
+if @tk like '111%' begin
+	Set @t_chi = @t_tt
+	Set @t_chi_nt = @t_tt_nt
+end
+]]>
+        &CommandCheckLockedDate;
+        &CommandCheckVoucherNumber;
+        <![CDATA[
+if $r30.NewValue <> $r30.OldValue begin]]>&CommandCheckDetailInputVATInvoice;<![CDATA[end
+if exists(select 1 from cttt30 where left(stt_rec_tt, 10) = left(@stt_rec, 10)) begin
+  select @$updateConflict as message
+  return
+end
+]]>
+        &BeforeVoucherUpdate;
+        <![CDATA[
+if '$partition$current' <> '$partition$previous' begin
+  insert into @@prime$partition$current select * from @@prime$partition$previous where stt_rec = @stt_rec
+  if @$so_ct_goc <> 0 or @$dien_giai_ct_goc <> '' insert into v00$$partition$current select * from v00$$partition$previous where stt_rec = @stt_rec
+  if $d71.NewValue = $d71.OldValue begin
+    insert into d71$$partition$current select * from d71$$partition$previous where stt_rec = @stt_rec
+    delete d71$$partition$previous where stt_rec = @stt_rec
+  end
+  if $r60.NewValue = $r60.OldValue begin
+    insert into r60$$partition$current select * from r60$$partition$previous where stt_rec = @stt_rec
+    delete r60$$partition$previous where stt_rec = @stt_rec
+  end
+  if $r30.NewValue = $r30.OldValue begin
+    insert into r30$$partition$current select * from r30$$partition$previous where stt_rec = @stt_rec
+    delete r30$$partition$previous where stt_rec = @stt_rec
+  end
+  delete @@prime$partition$previous where stt_rec = @stt_rec
+  delete @@inquiry$partition$previous where stt_rec = @stt_rec
+  delete v00$$partition$previous where stt_rec = @stt_rec
+end
+
+if $d71.NewValue = $d71.OldValue begin
+  update d71$$partition$current set stt_rec = @stt_rec, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_ct = @@id, tien_hang = tien0, tien_hang_nt = tien_nt0 where stt_rec = @stt_rec
+end else begin
+  update @d71 set stt_rec = @stt_rec, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_ct = @@id, tien_hang = tien0, tien_hang_nt = tien_nt0
+  delete d71$$partition$previous where stt_rec = @stt_rec
+end
+
+if $r60.NewValue = $r60.OldValue begin
+  update r60$$partition$current set stt_rec = @stt_rec, loai_ct = @loai_ct, ngay_ct = @ngay_ct, ngay_lct = @ngay_lct, so_ct = @so_ct, status = @status, datetime0 = getdate(), user_id0 = @@userID, datetime2 = getdate(), user_id2 = @@userID where stt_rec = @stt_rec
+end else begin
+  update @r60 set stt_rec = @stt_rec, ma_ct = @@id, loai_ct = @loai_ct, ngay_ct = @ngay_ct, ngay_lct = @ngay_lct, so_ct = @so_ct, ma_dvcs = @ma_dvcs, status = @status, datetime0 = getdate(), user_id0 = @@userID, datetime2 = getdate(), user_id2 = @@userID
+  delete r60$$partition$previous where stt_rec = @stt_rec
+end
+
+if $r30.NewValue = $r30.OldValue begin
+  update r30$$partition$current set stt_rec = @stt_rec, ma_ct = @@id, loai_ct = @loai_ct, ngay_ct = @ngay_ct, ngay_lct = @ngay_lct, so_ct = @so_ct, ma_nt = @ma_nt, ty_gia = @ty_gia, tk_du = @tk, status = @status, datetime0 = getdate(), user_id0 = @@userID, datetime2 = getdate(), user_id2 = @@userID where stt_rec = @stt_rec
+end else begin
+  update @r30 set stt_rec = @stt_rec, ma_ct = @@id, loai_ct = @loai_ct, ngay_ct = @ngay_ct, ngay_lct = @ngay_lct, so_ct = @so_ct, ma_dvcs = @ma_dvcs, ma_nt = @ma_nt, ty_gia = @ty_gia, tk_du = @tk, status = @status, datetime0 = getdate(), user_id0 = @@userID, datetime2 = getdate(), user_id2 = @@userID
+  delete r30$$partition$previous where stt_rec = @stt_rec
+end
+
+declare @revise int
+select @revise = 1
+if $d71.NewValue = $d71.OldValue and exists(
+  select 1 from @@prime$partition$current where stt_rec = @stt_rec and loai_ct = @loai_ct and (case when status = '0' then 0 else 1 end = case when @status = '0' then 0 else 1 end)
+) select @revise = 0
+]]>
+      </text>
+    </command>
+
+    <command event="Updated">
+      <text>
+        <![CDATA[
+if $d71.NewValue <> $d71.OldValue insert into d71$$partition$current select * from @d71
+if $r60.NewValue <> $r60.OldValue insert into r60$$partition$current select * from @r60
+if $r30.NewValue <> $r30.OldValue insert into r30$$partition$current select * from @r30
+update @@prime$partition$current set datetime2 = getdate(), user_id2 = @@userID where stt_rec = @stt_rec
+if @$so_ct_goc <> 0 or @$dien_giai_ct_goc <> '' begin
+  if exists(select 1 from v00$$partition$current where stt_rec = @stt_rec) update v00$$partition$current set so_ct_goc = @$so_ct_goc, dien_giai_ct_goc = @$dien_giai_ct_goc where stt_rec = @stt_rec
+  else insert into v00$$partition$current(stt_rec, so_ct_goc, dien_giai_ct_goc) select @stt_rec, @$so_ct_goc, @$dien_giai_ct_goc
+end else delete v00$$partition$current where stt_rec = @stt_rec
+]]>
+        &AfterUpdate;
+        &DeclareStock;
+        &DeclarePost;
+        <![CDATA[
+if @revise = 1 begin
+  if $d71.NewValue = $d71.OldValue begin ]]>&ReviseCurrentStock;<![CDATA[ end
+    else begin ]]>&UpdateCurrentStock;<![CDATA[ end
+end
+]]>
+        &Delete;
+        &Post;
+        &AfterVoucherUpdate;
+        &CommandShowWarningMessage;
+      </text>
+    </command>
+
+    <command event="Deleting">
+      <text>
+        &CommandCheckVoucherHandleBeforeDelete;
+        &CommandWhenVoucherBeforeDelete;
+        <![CDATA[
+if exists(select 1 from cttt30 where left(stt_rec_tt, 10) = left(@stt_rec, 10)) begin
+  select @$deleteConflict as message
+  return
+end
+]]>
+        &BeforeVoucherUpdate;
+        <![CDATA[
+delete cttt31 where stt_rec_hd = @stt_rec
+delete r30$$partition$current where stt_rec = @stt_rec
+delete r60$$partition$current where stt_rec = @stt_rec
+delete d71$$partition$current where stt_rec = @stt_rec
+delete @@inquiry$partition$current where stt_rec = @stt_rec
+delete v00$$partition$current where stt_rec = @stt_rec
+delete @@master where stt_rec = @stt_rec
+]]>
+        &DeclareStock4Delete;
+        &DeleteCurrentStock;
+        &Delete;
+		&DeletePC;
+      </text>
+    </command>
+
+    <command event="Checking">
+      <text>
+        <![CDATA[
+var f = this, id = f.get_id(), n1 = 0, n2 = 0, v = f._language == 'v', g = f.getItem('d71')._controlBehavior;
+var l1 = g._getColumnOrder('stt_rec_dh'), l2 = g._getColumnOrder('stt_rec_pn');
+var e1 = (v ? 'Thông tin nhà cung cấp của hóa đơn phải giống với đơn hàng hoặc phiếu nhập.' : 'Invoice should have same supplier information as Purchase Order or Purchase Receipt.');
+var e2 = (v ? 'Dữ liệu trong chi tiết chỉ được lấy số liệu từ đơn hàng hoặc phiếu nhập.' : 'Data in grid form must be extracted from Purchase Order or Purchase Receipt.');
+
+var t = f.getItemValue('ma_kh'), q = ($func.trim(f.getItemValue('loai_ct')) != '2');
+for (var i = 1; i <= g._rowCount; i++) {
+  var v1 = (g._getItemValue(i, l1) != ''), v2 = (g._getItemValue(i, l2) != '');
+  if (!v1 && !q) v2 = false;
+  if (v1 || v2) {
+    var u = g._getItem(i, 1)._customerIdentity;
+    if (!u) u = (f._action == 'Edit') ? f._customerIdentity : t;
+    if (t != u) {
+      $func.hideWait(id);
+      $message.show(e1, String.format('$find(\'{0}\').getItem(\'ma_kh\').focus()', id));
+      f._checked = false;
+      break;
+    }
+    if (f._checked) {
+      if (v2 && q) {if (n2 == 0) n2 = 1;}
+      else {
+        if (v1) {if (n1 == 0) n1 = 1;}
+      }
+    }
+  }
+}
+
+if (f._checked) {
+  if (n1 + n2 > 1) {
+    f._errorWarningObject = g._getItem(1, g._getColumnOrder('ma_vt'));
+    $func.hideWait(id);
+    $message.show(e2, String.format('var f = $find(\'{0}\');f.focus(\'d71\');f._errorWarningObject.focus()', id));
+    f._checked = false;
+  }
+}
+]]>
+      </text>
+    </command>
+
+  </commands>
+
+  <script>
+    <text>
+      &ScriptVoucherInit;
+      <![CDATA[
+function init$Voucher$(f) {initialize(f, 'ong_ba', 'ma_gd', 'loai_ct', 'status');}
+function active$Voucher$(f) {]]>&ScriptActiveVoucher;<![CDATA[
+  if (f._action == 'Edit') f._customerIdentity = f.getItemValue('ma_kh');
+  f._tabContainer.add_activeTabChanged(onChange$Voucher$Tab);
+  f._tabContainer._loaded = true;
+  if (f._action == 'New') 
+	{
+	o = f.getItem('fcode3');
+    o.value = f._Tktmmd;
+	f.setItemValue('dien_giai_chi', f._dg);
+	}
+}
+function scatter$Voucher$(f) {]]>&ScriptScatterVoucher;<![CDATA[if (f._action == 'Edit') f._customerIdentity = f.getItemValue('ma_kh');}
+function close$Voucher$(f) {]]>&ScriptCloseVoucher;<![CDATA[
+  if (f._tabContainer) try {f._tabContainer.remove_activeTabChanged(onChange$Voucher$Tab);} catch (ex) {}
+}
+function on$Voucher$ExecuteCommand(sender, e) {
+  var action = e.type.Action, f = sender, g = f.getItem('d71')._controlBehavior, y = f.getItem('r60')._controlBehavior, z = f.getItem('r30')._controlBehavior;
+  switch (action) {
+    case 'Gather':
+      g.setSequenceNumber('line_nbr');
+      g.setContinuance('stt_rec0');
+      y.setSequenceNumber('line_nbr');
+      y.setContinuance('stt_rec0');
+      z.setSequenceNumber('line_nbr');
+      z.setContinuance('stt_rec0');
+      break;
+    default:
+      break;
+  }
+}
+]]>
+      &ScriptVoucherNumber;
+      <![CDATA[
+objectBehavior$Voucher$Currency = {
+]]>&ScriptCurrency;<![CDATA[
+  create: function(f) {
+    var d = f.getItem('ngay_lct'), p = f.getItem('ngay_ct'), c = f.getItem('ma_nt'), r = f.getItem('ty_gia'), g = f.getItem('d71')._controlBehavior, y = f.getItem('r60')._controlBehavior, z = f.getItem('r30')._controlBehavior;
+    var v = f._currencyBehavior = $create(Sthink.AjaxControlExtender.Currency, {id: f._id + '_currencyBehavior', currencyDate: d, referenceDate: p, exchangeRate: r, form: f, baseCurrency: f._baseCurrency, flush: true}, null, null, c);
+    v.set_currencyFields('t_chi_nt, t_tien_nt0, t_cp_nt, t_thue_nt, t_tt_nt : t_chi, t_tien0, t_cp, t_thue, t_tt');
+    v.addGridFields(g, 'gia_nt0, s5, tien_nt0 : gia0, s6, tien0');
+    v.addGridFields(y, 'tien_cp_nt : tien_cp');
+    v.addGridFields(z, 't_tien_nt,t_thue_nt:t_tien,t_thue');
+    
+    v.addTotalFields(g, [['t_tien_nt0', 'tien_nt0'], ['t_tien0', 'tien0']]);
+    v.addTotalFields(y, [['t_cp_nt', 'tien_cp_nt'], ['t_cp', 'tien_cp']]);
+    v.addTotalFields(z, [['t_thue_nt', 't_thue_nt'], ['t_thue', 't_thue']]);
+    
+    v.set_referenceFields(null);
+    v.set_executeExpression(['[t_tt_nt]:=[t_tien_nt0]+[t_cp_nt]+[t_thue_nt]', '[t_tt]:=[t_tien0]+[t_cp]+[t_thue]','[t_chi]:=[t_chi_nt]*[ty_gia]']);
+]]>&CurrencyDateChanged;<![CDATA[
+  onCurrencySelected: function(sender, e) {if (e.object._baseCurrency == e.type) e.object._form.focusWhenTabChanged([['d71', 'ma_tt'], ['r60', 'ma_tt'], ['r30', 'ma_tt'], 'so_ct_goc']);}
+}
+]]>
+
+      <![CDATA[
+function onChange$Voucher$Tab(sender, e) {sender.parentForm.focusWhenTabChanged(['d71', 'r60', 'r30', 'so_ct_goc'])};
+function onChange$Voucher$Customer(o) {o.parentForm.request('Customer', 'Customer', ['ma_kh'], o);}
+function onChange$Voucher$Transaction(o) {o.parentForm.request('Transaction', 'Transaction', ['ma_gd'], o);}
+function onChange$Voucher$DateInvoice(o) {
+	var a = o.parentForm, c = a.getItemValue('ngay_ct0');
+	a.setItemValue('ngay_ct', c);
+	a.setItemValue('ngay_lct', c);
+	}
+function onChange$Voucher$DebitAccount(o) {
+	var a = o.parentForm, b = a.getItem('t_chi_nt'), c = a.getItemValue('tk'), d = a.getItemValue('t_tt_nt'), e = a.getItemValue('t_tt');
+	a.request('DebitAccount', 'DebitAccount', ['tk'], o);
+	if (c.match(/^111.*$/)) {
+	b.setAttribute('disabled','disabled');
+	a.setItemValue('t_chi_nt', d);
+	a.setItemValue('t_chi', e);
+	}
+	else{
+	b.removeAttribute("disabled");
+	}
+	}
+function onChange$Voucher$ForeignCurrencyChi(e) {
+  var f = e.parentForm, o = f.getItem('t_chi');
+  f.executeExpression(['[t_chi]:=[t_chi_nt]*[ty_gia]']);
+  f.live(o);
+}
+function onLoad$Voucher$ForeignCurrencyChi(e) {
+  var f = e.parentForm, b = f.getItem('t_thu_nt'), c = f.getItemValue('tk');
+	if (c.match(/^111.*$/)) {
+	b.setAttribute('disabled','disabled');
+	}
+	else{
+	b.removeAttribute("disabled");
+	}
+}	
+function on$Voucher$ResponseComplete(sender, e) {
+  var f = e.object, context = e.type.Context, result = e.type.Result;
+  switch (context) {
+    case 'Loading':]]>
+      &VoucherNumberLoading;<![CDATA[
+      break;
+    case 'Scattering':]]>
+      &VoucherNumberScattering;<![CDATA[
+      break;
+]]>
+      &VoucherNumberReading;
+      &CurrencyResponse;
+      <![CDATA[
+    case 'Customer':
+      f.setItemControlBehavior('tk', result[0].Value, result[1].Value, true);
+      f.setItemControlBehavior('ma_tt', result[2].Value, result[3].Value, true);
+      f.setItemControlBehavior('ong_ba', result[4].Value, null, true);
+      f.setItemControlBehavior('dia_chi', result[5].Value, null, true);
+      f.setItemControlBehavior('ma_so_thue', result[6].Value, null, true);
+      f.setItemControlBehavior('ten_ncc', result[7].Value, null, true);
+      f.live(f.getItem('ong_ba'));
+      break;
+    case 'Transaction':
+      f.setItemValue('loai_ct', result[0].Value);
+      break;
+    default:
+      break;
+  }
+}
+]]>
+      &ScriptVerifyInputVATInvoiceNumber;
+    </text>
+  </script>
+
+  <response>
+    <action id="Reading">
+      <text>
+        &CommandSetVoucherNumber;
+      </text>
+    </action>
+
+    <action id="Customer">
+      <text>
+        <![CDATA[
+if exists(select 1 from dmkh where ma_kh = @ma_kh and cc_yn = 1) begin
+  select rtrim(a.tk) as tk, b.ten_tk%l, rtrim(a.ma_tt) as ma_tt, c.ten_tt%l, rtrim(doi_tac) as ong_ba, rtrim(a.dia_chi) as dia_chi, rtrim(a.ma_so_thue) as ma_so_thue, rtrim(a.ten_kh) as ten_ncc
+    from dmkh a left join dmtk b on a.tk = b.tk left join dmtt c on a.ma_tt = c.ma_tt
+    where a.ma_kh = @ma_kh
+  return
+end
+]]>
+      </text>
+    </action>
+
+    <action id="Transaction">
+      <text>
+        <![CDATA[
+select rtrim(loai_ct) as loai_ct from dmmagd where ma_ct = 'PNA' and ma_gd = @ma_gd
+return
+]]>
+      </text>
+    </action>
+
+    &XMLGetVoucherNumber;
+    &XMLGetExchangeRate;
+  </response>
+</dir>

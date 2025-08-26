@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE grid [
+  <!ENTITY FilterCheckAccessUnit "ma_dvcs = @@unit">
+]>
+
+<grid table="vcrmquyenkh" code="ma_dvcs, ma_kh" order="ma_dvcs, ma_kh" filter="&FilterCheckAccessUnit;" xmlns="urn:schemas-Sthink-company:data-grid">
+  <title v="Khai báo quyền khách hàng" e="Defining Employee Access Right"></title>
+  <subTitle v="Cập nhật quyền truy cập cho khách hàng" e="Employee Access Right Maintenance"></subTitle>
+
+  <fields>
+    <field name="ma_dvcs" isPrimaryKey="true" width="0" hidden="true">
+      <header v="" e=""></header>
+    </field>
+    <field name="ma_kh" isPrimaryKey="true" width="100" allowSorting="true" allowFilter="true">
+      <header v="Mã khách hàng" e="Employee ID"></header>
+    </field>
+    <field name="ten_kh%l" width="300" allowSorting="true" allowFilter="true">
+      <header v="Tên khách hàng" e="Employee Name"></header>
+    </field>
+    <field name="bo_phan" width="100" allowSorting="true" allowFilter="true">
+      <header v="Bộ phận" e="Department"></header>
+    </field>
+    <field name="name2" width="100" allowSorting="true" allowFilter="true">
+      <header v="Người sử dụng" e="User"></header>
+    </field>
+  </fields>
+
+  <views>
+    <view id="Grid">
+      <field name="ma_dvcs"/>
+      <field name="ma_kh"/>
+      <field name="ten_kh%l"/>
+      <field name="bo_phan"/>
+      <field name="name2"/>
+    </view>
+  </views>
+	<commands>
+		<command event="Loading">
+			<text>
+				<![CDATA[
+				insert into crmquyenkh(ma_dvcs, ma_kh, user_id) 
+                select a.ma_dvcs, a.ma_kh, 0 from zcdmkh a left join crmquyenkh b on a.ma_dvcs = b.ma_dvcs and a.ma_kh = b.ma_kh where a.ma_dvcs = @@unit and b.ma_kh is null                
+]]>
+			</text>
+		</command>		
+	</commands>
+  <toolbar>
+    <button command="Edit">
+      <title v="Phân quyền" e="Edit"></title>
+    </button>
+    <button command="Freeze">
+      <title v="Toolbar.Freeze" e="Toolbar.Freeze"></title>
+    </button>
+  </toolbar>
+
+</grid>
