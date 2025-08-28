@@ -15,7 +15,7 @@ else select @filename = 'CPMaster2.xlsx', @description = N'Bank Debit Advice'
 insert into @@sysDatabaseName..ticket values(@ticket, @@userID, '&TransferID;', @filename, @description, '@@appDatabaseName', getdate());">
 ]>
 
-<grid table="m56$000000" code="stt_rec" order="ngay_ct, so_ct" type="Voucher" id="BN1" uniKey="true" xmlns="urn:schemas-Sthink-company:data-grid">
+<grid table="m56$000000" code="stt_rec" order="ngay_ct desc, so_ct desc" type="Voucher" id="BN1" uniKey="true" xmlns="urn:schemas-Sthink-company:data-grid">
   <title v="Giấy báo nợ" e="Bank Debit Advice"></title>
   <subTitle v="Cập nhật giấy báo nợ: thêm, sửa, xóa..." e="Add, Edit, Delete Bank Debit Advice..."></subTitle>
   <partition table="c56$000000" prime="m56$" inquiry="i56$" field="ngay_ct" expression="convert(char(6), {0}, 112)" increase="dateadd(month, 1, {0})" default="000000"/>
