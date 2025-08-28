@@ -7,7 +7,7 @@
   <!ENTITY XMLStandardVoucherToolbar SYSTEM "..\Include\XML\ExternalVoucherToolbar.xml">
 ]>
 
-<grid table="m64$000000" code="stt_rec" order="ngay_ct, so_ct" type="Voucher" id="DXA" uniKey="true" xmlns="urn:schemas-Sthink-company:data-grid">
+<grid table="m64$000000" code="stt_rec" order="ngay_ct desc, so_ct desc" type="Voucher" id="DXA" uniKey="true" xmlns="urn:schemas-Sthink-company:data-grid">
   <title v="Đơn hàng bán" e="Sales Order"></title>
   <subTitle v="Cập nhật đơn hàng: thêm, sửa, xóa..." e="Add New, Edit, Delete Order..."></subTitle>
   <partition table="c64$000000" prime="m64$" inquiry="i64$" field="ngay_ct" expression="convert(char(6), {0}, 112)" increase="dateadd(month, 1, {0})" default="000000"/>
