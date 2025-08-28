@@ -7,7 +7,7 @@
 	<!ENTITY XMLStandardVoucherToolbar SYSTEM "..\Include\XML\ExternalVoucherToolbar.xml">
 ]>
 
-<grid table="m61$000000" code="stt_rec" order="ngay_ct, so_ct" type="Voucher" id="SQ1" uniKey="true" xmlns="urn:schemas-Sthink-company:data-grid">
+<grid table="m61$000000" code="stt_rec" order="ngay_ct desc, so_ct desc" type="Voucher" id="SQ1" uniKey="true" xmlns="urn:schemas-Sthink-company:data-grid">
 	<title v="Giấy báo giá" e="Quotation Entry"></title>
 	<subTitle v="Cập nhật giấy báo giá: thêm, sửa, xóa..." e="Add New, Edit, Delete Quotation Entry..."></subTitle>
 	<partition table="c61$000000" prime="m61$" inquiry="i61$" field="ngay_ct" expression="convert(char(6), {0}, 112)" increase="dateadd(month, 1, {0})" default="000000"/>
