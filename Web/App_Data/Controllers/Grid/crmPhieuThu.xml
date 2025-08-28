@@ -15,7 +15,7 @@ else select @filename = 'CRMaster2.xlsx', @description = N'Cash Receipt'
 insert into @@sysDatabaseName..ticket values(@ticket, @@userID, '&TransferID;', @filename, @description, '@@appDatabaseName', getdate());">
 ]>
 
-<grid table="m41$000000" code="stt_rec" order="ngay_ct, so_ct" type="Voucher" id="PT1" uniKey="true" xmlns="urn:schemas-Sthink-company:data-grid">
+<grid table="m41$000000" code="stt_rec" order="ngay_ct desc, so_ct desc" type="Voucher" id="PT1" uniKey="true" xmlns="urn:schemas-Sthink-company:data-grid">
   <title v="Phiếu thu tiền mặt" e="Cash Receipt"></title>
   <subTitle v="Cập nhật phiếu thu: thêm, sửa, xóa..." e="New, Edit, Delete Cash Receipt..."></subTitle>
   <partition table="c41$000000" prime="m41$" inquiry="i41$" field="ngay_ct" expression="convert(char(6), {0}, 112)" increase="dateadd(month, 1, {0})" default="000000"/>
