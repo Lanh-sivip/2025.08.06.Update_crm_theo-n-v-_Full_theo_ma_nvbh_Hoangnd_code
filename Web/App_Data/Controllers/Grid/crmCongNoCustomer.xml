@@ -143,7 +143,7 @@ function formatDateView(c) {return String.format('{0}/{1}/{2}', c.substring(6, 8
 	
 declare @d smalldatetime, @DateFrom smalldatetime, @DateTo smalldatetime, @tk varchar(33), @Type TINYINT
 select @d = getdate(), @tk = '131', @Type = 1
-SELECT @DateFrom = DATEFROMPARTS(YEAR(@d), 1, 1), @DateTo = DATEFROMPARTS(YEAR(@d), 12, 31)
+SELECT @DateTo = DATEFROMPARTS(YEAR(@d), MONTH(@d), DAY(@d)), @DateFrom = DATEADD(DAY, -6, @DateTo)
 exec crmrs_rptDCCustomer @DateFrom, @DateTo, @@unit, @tk, @ma_kh, @@language, 1, 0, @Type, @@userID, @@admin, @@textExternal
 
 		]]>
