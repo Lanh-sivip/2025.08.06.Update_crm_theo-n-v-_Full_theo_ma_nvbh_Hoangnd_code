@@ -15,7 +15,7 @@ else select @filename = 'PVMaster2.xlsx', @description = N'Sales Invoice'
 insert into @@sysDatabaseName..ticket values(@ticket, @@userID, '&TransferID;', @filename, @description, '@@appDatabaseName', getdate());">
 ]>
 
-<grid table="m71$000000" code="stt_rec" order="ngay_ct, so_ct" type="Voucher" id="PNA" uniKey="true" xmlns="urn:schemas-Sthink-company:data-grid">
+<grid table="m71$000000" code="stt_rec" order="ngay_ct desc, so_ct desc" type="Voucher" id="PNA" uniKey="true" xmlns="urn:schemas-Sthink-company:data-grid">
   <title v="Hóa đơn mua hàng trong nước" e="Domestic Purchase Invoice"></title>
   <subTitle v="Cập nhật hóa đơn: thêm, sửa, xóa..." e="New, Edit, Delete Invoice..."></subTitle>
   <partition table="c71$000000" prime="m71$" inquiry="i71$" field="ngay_ct" expression="convert(char(6), {0}, 112)" increase="dateadd(month, 1, {0})" default="000000"/>
