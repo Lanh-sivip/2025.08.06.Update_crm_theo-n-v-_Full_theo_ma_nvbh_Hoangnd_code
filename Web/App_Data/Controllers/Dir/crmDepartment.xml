@@ -101,7 +101,7 @@ end">
       <items style="Mask"/>
     </field>   
     <field name="nh_bp3">
-      <header v="Nhóm bộ phận 3" e="Department Group 3"></header>      		
+      <header v="Mã NVBH" e="Department Group 3"></header>      		
     <items style="AutoComplete" controller="SalesEmployee" reference="ten_nh_bp3%l" key="status = '1'" check="1=1" information="ma_nvbh$dmnvbh.ten_nvbh%l"/>
     </field>
     <field name="ten_nh_bp3%l" readOnly="true" external="true" defaultValue="''">
