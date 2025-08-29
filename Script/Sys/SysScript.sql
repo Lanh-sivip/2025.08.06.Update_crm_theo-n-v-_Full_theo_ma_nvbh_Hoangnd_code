@@ -135,7 +135,7 @@ GO
 
 
 DELETE crmtabinfo WHERE  1=1
-INSERT INTO crmtabinfo([id], [id0], [bar], [bar2], [sysid], [grid_yn], [hidden_grid_yn], [view_yn], [table_del_yn], [table_name]) VALUES(N'10', N'', N'Thông tin khách hàng', N'Customerl Information', N'', 0, 0, 0, 0, N'')
+INSERT INTO crmtabinfo([id], [id0], [bar], [bar2], [sysid], [grid_yn], [hidden_grid_yn], [view_yn], [table_del_yn], [table_name]) VALUES(N'10', N'', N'Quản lý khách hàng', N'Customerl Information', N'', 0, 0, 0, 0, N'')
 INSERT INTO crmtabinfo([id], [id0], [bar], [bar2], [sysid], [grid_yn], [hidden_grid_yn], [view_yn], [table_del_yn], [table_name]) VALUES(N'11', N'10', N'Thông tin chung', N'General Information', N'crmCustomer', 0, 0, 1, 0, N'zcdmkh')
 INSERT INTO crmtabinfo([id], [id0], [bar], [bar2], [sysid], [grid_yn], [hidden_grid_yn], [view_yn], [table_del_yn], [table_name]) VALUES(N'12', N'10', N'Liên hệ', N'Regular Education', N'crmLienhe', 1, 0, 0, 1, N'crmdmlienhe')
 INSERT INTO crmtabinfo([id], [id0], [bar], [bar2], [sysid], [grid_yn], [hidden_grid_yn], [view_yn], [table_del_yn], [table_name]) VALUES(N'14', N'10', N'Tài liệu đính kèm', N'Regular Education', N'crmFiles', 1, 0, 0, 1, N'crm_dmlienhe')
@@ -661,7 +661,7 @@ GO
 --DELETE wcommand WHERE  wmenu_id like '39.%'
 INSERT INTO wcommand([wmenu_id], [wmenu_id0], [menu_id], [bar], [bar2], [link], [parameter], [icon_url], [width], [status], [icon], [expl_icon], [sysid], [edition], [datetime2], [datetime0], [user_id0], [user_id2], [type], [syscode], [msys], [target], [xtype], [smenu_id], [sicon]) VALUES(N'39.00.00', N'', N'39.00.00', N'CRM', N'Insurance', N'', N'', N'', 0, N'1', N'', 0, N'', N'', NULL, NULL, 0, 0, N'', N'', 0, N'', N'00', N'', N'')
 INSERT INTO wcommand([wmenu_id], [wmenu_id0], [menu_id], [bar], [bar2], [link], [parameter], [icon_url], [width], [status], [icon], [expl_icon], [sysid], [edition], [datetime2], [datetime0], [user_id0], [user_id2], [type], [syscode], [msys], [target], [xtype], [smenu_id], [sicon]) VALUES(N'39.05.01', N'39.00.00', N'39.05.01', N'Thông tin khách hàng', N'Customer Information', N'crmCustomerInformation.aspx', N'', N'', 0, N'1', N'b64Employee', 0, N'crmCIGeneralInformation', N'', NULL, NULL, 0, 0, N'D', N'', 0, N'', N'00', N'', N'')
-INSERT INTO wcommand([wmenu_id], [wmenu_id0], [menu_id], [bar], [bar2], [link], [parameter], [icon_url], [width], [status], [icon], [expl_icon], [sysid], [edition], [datetime2], [datetime0], [user_id0], [user_id2], [type], [syscode], [msys], [target], [xtype], [smenu_id], [sicon]) VALUES(N'39.05.02', N'39.00.00', N'39.05.02', N'Danh mục bộ phận theo nhân viên KD', N'Department List', N'crmDepartment.aspx', N'', N'', 0, N'1', N'', 0, N'crmDepartment', N'', NULL, NULL, 0, 0, N'D', N'', 0, N'', N'00', N'', N'')
+INSERT INTO wcommand([wmenu_id], [wmenu_id0], [menu_id], [bar], [bar2], [link], [parameter], [icon_url], [width], [status], [icon], [expl_icon], [sysid], [edition], [datetime2], [datetime0], [user_id0], [user_id2], [type], [syscode], [msys], [target], [xtype], [smenu_id], [sicon]) VALUES(N'39.05.02', N'39.00.00', N'39.05.02', N'Danh mục phân cấp khách hàng theo NVKD', N'Department List', N'crmDepartment.aspx', N'', N'', 0, N'1', N'', 0, N'crmDepartment', N'', NULL, NULL, 0, 0, N'D', N'', 0, N'', N'00', N'', N'')
 GO
 
 --DELETE command WHERE  menu_id like '39.%'
