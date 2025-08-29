@@ -832,3 +832,5 @@ INSERT INTO crmctquyentab(ma_dvcs, ma_quyen, r_access, r_new, r_edit, r_del, dat
 INSERT INTO crmctquyentab(ma_dvcs, ma_quyen, r_access, r_new, r_edit, r_del, datetime0, datetime2, user_id0, user_id2) VALUES(N'0019', N'CN06', N'11.01A,12.01A,14.01A,15.01A,31.01A,32.01A,33.01A,42.01A,44.01A', N'12.02N,14.02N,15.02N,31.02N,32.02N,33.02N,42.02N,44.02N', N'12.03E,14.03E,15.03E,31.03E,32.03E,33.03E,42.03E,44.03E', N'12.04D,14.04D,15.04D,31.04D,32.04D,33.04D,42.04D,44.04D', NULL, NULL, NULL, NULL)
 INSERT INTO crmctquyentab(ma_dvcs, ma_quyen, r_access, r_new, r_edit, r_del, datetime0, datetime2, user_id0, user_id2) VALUES(N'0019', N'CN07', N'11.01A,12.01A,14.01A,15.01A,21.01A,22.01A,23.01A,24.01A,41.01A,43.01A', N'12.02N,14.02N,15.02N,21.02N,22.02N,23.02N,24.02N,41.02N,43.02N', N'12.03E,14.03E,15.03E,21.03E,22.03E,23.03E,24.03E,41.03E,43.03E', N'12.04D,14.04D,15.04D,21.04D,22.04D,23.04D,24.04D,41.04D,43.04D', NULL, NULL, NULL, NULL)
 
+GO
+
