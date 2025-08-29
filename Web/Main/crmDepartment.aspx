@@ -1,4 +1,4 @@
-﻿<%@ Page AutoEventWireup="false" MasterPageFile="~/Main/MasterPage.master" Inherits="Sthink.ReportExtender.UI.Page" v="Danh mục bộ phận" e="Department List"%>
+﻿<%@ Page AutoEventWireup="false" MasterPageFile="~/Main/MasterPage.master" Inherits="Sthink.ReportExtender.UI.Page" v="Danh mục phân cấp khách hàng theo NVKD" e="Department List"%>
 
 <asp:Content ID="headContent" ContentPlaceHolderID="head" runat="server"></asp:Content>
 <asp:Content ID="mainContent" ContentPlaceHolderID="Sthink" runat="server">
