@@ -995,4 +995,14 @@ END
 
 
 GO
+-----Bổ sung danh mục giai đoan trong CRM - 29-08-2025
+
+DELETE FROM crmgdtn WHERE 1=1
+INSERT INTO crmgdtn(ma_dvcs, ma_gdtn, ten_gdtn, ten_gdtn2, ghi_chu, ti_le, status, datetime0, datetime2, user_id0, user_id2, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s2, s3, s4, s5, s6, s7, s8, s9) VALUES(N'9999', N'01', N'Gọi điện', N'', N'', NULL, N'1', '20250101 00:00:00', '20250101 00:00:00', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT INTO crmgdtn(ma_dvcs, ma_gdtn, ten_gdtn, ten_gdtn2, ghi_chu, ti_le, status, datetime0, datetime2, user_id0, user_id2, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s2, s3, s4, s5, s6, s7, s8, s9) VALUES(N'9999', N'02', N'Hẹn gặp', N'', N'', NULL, N'1', '20250101 00:00:00', '20250101 00:00:00', 1, NULL, N'', N'', N'', NULL, NULL, NULL, NULL, NULL, NULL, N'', N'', N'', N'', N'', N'', NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT INTO crmgdtn(ma_dvcs, ma_gdtn, ten_gdtn, ten_gdtn2, ghi_chu, ti_le, status, datetime0, datetime2, user_id0, user_id2, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s2, s3, s4, s5, s6, s7, s8, s9) VALUES(N'9999', N'03', N'Gửi báo giá', N'', N'', NULL, N'1', '20250101 00:00:00', '20250101 00:00:00', 1, NULL, N'', N'', N'', NULL, NULL, NULL, NULL, NULL, NULL, N'', N'', N'', N'', N'', N'', NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT INTO crmgdtn(ma_dvcs, ma_gdtn, ten_gdtn, ten_gdtn2, ghi_chu, ti_le, status, datetime0, datetime2, user_id0, user_id2, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s2, s3, s4, s5, s6, s7, s8, s9) VALUES(N'9999', N'04', N'Xuất hóa đơn', N'', N'', NULL, N'1', '20250101 00:00:00', '20250101 00:00:00', 1, NULL, N'', N'', N'', NULL, NULL, NULL, NULL, NULL, NULL, N'', N'', N'', N'', N'', N'', NULL, NULL, NULL, NULL, NULL, NULL)
+
+
+
 
