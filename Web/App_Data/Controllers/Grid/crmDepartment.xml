@@ -2,7 +2,7 @@
 
 <grid table="vcrmbp" code="ma_dvcs, ma_bp" order="stt_ref, ma_bp" filter="ma_dvcs = @@unit" xmlns="urn:schemas-Sthink-company:data-grid">
 
-  <title v="Danh mục bộ phận" e="Department List"></title>
+  <title v="Danh mục phân cấp khách hàng theo NVKD" e="Department List"></title>
   <subTitle v="Cập nhật bộ phận: thêm, sửa, xóa..." e="Add, Edit, Delete Department..."></subTitle>
 
   <fields>
