@@ -805,3 +805,20 @@ END
 
 
 GO
+
+
+
+--Insert vao don vi 9999
+INSERT INTO crmdmquyen(ma_dvcs, ma_quyen, ten_quyen, ten_quyen2, loai_quyen, status, datetime0, datetime2, user_id0, user_id2) VALUES(N'9999', N'BP01', N'Bộ phận full', N'', N'2', N'1', '20250827 12:24:21', '20250827 12:24:21', 1, 1)
+INSERT INTO crmdmquyen(ma_dvcs, ma_quyen, ten_quyen, ten_quyen2, loai_quyen, status, datetime0, datetime2, user_id0, user_id2) VALUES(N'9999', N'BP02', N'Bộ phận PKD1', N'', N'2', N'1', '20250827 12:24:32', '20250827 12:24:32', 1, 1)
+INSERT INTO crmdmquyen(ma_dvcs, ma_quyen, ten_quyen, ten_quyen2, loai_quyen, status, datetime0, datetime2, user_id0, user_id2) VALUES(N'9999', N'BP03', N'Bộ phận PKD2', N'', N'2', N'1', '20250827 12:24:39', '20250827 12:24:39', 1, 1)
+INSERT INTO crmdmquyen(ma_dvcs, ma_quyen, ten_quyen, ten_quyen2, loai_quyen, status, datetime0, datetime2, user_id0, user_id2) VALUES(N'9999', N'CN01', N'Quyền chức năng full', N'', N'1', N'1', '20250827 12:19:10', '20250829 11:12:59', 1, 1)
+INSERT INTO crmdmquyen(ma_dvcs, ma_quyen, ten_quyen, ten_quyen2, loai_quyen, status, datetime0, datetime2, user_id0, user_id2) VALUES(N'9999', N'CN02', N'Quyền chức năng chỉ có mua hàng', N'', N'1', N'1', '20250827 12:19:26', '20250829 11:13:08', 1, 1)
+INSERT INTO crmdmquyen(ma_dvcs, ma_quyen, ten_quyen, ten_quyen2, loai_quyen, status, datetime0, datetime2, user_id0, user_id2) VALUES(N'9999', N'CN03', N'Quyền chức năng chỉ có bán hàng', N'', N'1', N'1', '20250827 12:19:41', '20250829 11:13:12', 1, 1)
+INSERT INTO crmdmquyen(ma_dvcs, ma_quyen, ten_quyen, ten_quyen2, loai_quyen, status, datetime0, datetime2, user_id0, user_id2) VALUES(N'9999', N'CN04', N'Quyền chức năng chỉ có thu chi', N'', N'1', N'1', '20250827 12:19:49', '20250829 11:13:17', 1, 1)
+INSERT INTO crmdmquyen(ma_dvcs, ma_quyen, ten_quyen, ten_quyen2, loai_quyen, status, datetime0, datetime2, user_id0, user_id2) VALUES(N'9999', N'CN05', N'Quyền chức năng có mua, bán', N'', N'1', N'1', '20250827 12:20:07', '20250829 11:13:24', 1, 1)
+INSERT INTO crmdmquyen(ma_dvcs, ma_quyen, ten_quyen, ten_quyen2, loai_quyen, status, datetime0, datetime2, user_id0, user_id2) VALUES(N'9999', N'CN06', N'Quyền chức năng có mua, chi', N'', N'1', N'1', '20250827 12:20:22', '20250829 11:13:30', 1, 1)
+INSERT INTO crmdmquyen(ma_dvcs, ma_quyen, ten_quyen, ten_quyen2, loai_quyen, status, datetime0, datetime2, user_id0, user_id2) VALUES(N'9999', N'CN07', N'Quyền chức năng có bán, thu', N'', N'1', N'1', '20250827 12:20:31', '20250829 11:13:38', 1, 1)
+
+
+
