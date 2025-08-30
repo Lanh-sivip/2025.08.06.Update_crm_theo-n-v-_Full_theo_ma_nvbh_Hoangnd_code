@@ -89,8 +89,8 @@
    
 	  <view id="Dir" height="230">
 		  <item value="120, 30, 45, 25, 45, 20, 30, 25, 65, 75, 25, 0"/>		  
-		  <item value="11010000---1: [ma_lienhe].Label, [ma_lienhe], [ten_lienhe%l], [ma_dvcs]"/>
-		  <item value="11000------1: [ngay_bd].Label, [ngay_bd], [ma_kh]"/>
+		  <item value="110010000--1: [ma_lienhe].Label, [ma_lienhe], [ten_lienhe%l], [ma_dvcs]"/>
+		  <item value="1100-------1: [ngay_bd].Label, [ngay_bd], [ma_kh]"/>
 		  <item value="1100000000-1: [tieu_de].Label, [tieu_de], [stt_rec0]"/>
 		  <item value="11010000---1: [ma_gdtn].Label, [ma_gdtn], [ten_gdtn%l], [line_nbr]"/>
 		  <item value="110000000000: [noi_dung].Label, [noi_dung]"/>
@@ -110,9 +110,68 @@
 	  </view>
   </views>
 
-  &XMLGridCommandExtension;
+	<commands>
+		<command event="Loading">
+			<text>
+				<![CDATA[
+select 'set$ViewPanelCustomerID(this);load$CrmnhatkyForm(this);' as message
+return
+]]>
+			</text>
+		</command>
 
-  <css>
+		<command event="Scattering">
+			<text>
+				<![CDATA[
+select 'set$ViewPanelCustomerID(this);scatter$CrmnhatkyForm(this);' as message
+return
+]]>
+			</text>
+		</command>
+
+		<command event="Inserting">
+			<text>
+				<![CDATA[
+if exists(select 1 from @@table where ma_dvcs = @ma_dvcs and ma_kh = @ma_kh) select @stt_rec0 = max(stt_rec0), @line_nbr = max(line_nbr) from @@table where ma_dvcs = @ma_dvcs and ma_kh = @ma_kh
+else select @stt_rec0 = '000', @line_nbr = 0
+
+exec dbo.Sthink$CRM$GetRowID @stt_rec0 output, @line_nbr output
+select @datetime0 = getdate(), @datetime2 = getdate(), @user_id0 = @@userID, @user_id2 = @@userID
+]]>
+			</text>
+		</command>
+
+		<command event="Inserted">
+			<text>
+				<![CDATA[
+select @stt_rec0 as stt_rec0
+]]>
+			</text>
+		</command>
+
+		<command event="Updated">
+			<text>
+				<![CDATA[
+update @@table set datetime2 = getdate(), user_id2 = @@userID where ma_dvcs = @ma_dvcs and ma_kh = @ma_kh and stt_rec0 = @stt_rec0
+]]>
+			</text>
+		</command>
+	</commands>
+	<script>
+		<text>
+			<![CDATA[
+			function load$CrmnhatkyForm(a){				
+				a._action=="New" && a.setItemValue("ngay_bd",new Date)
+			}
+			function scatter$CrmnhatkyForm(a){
+				a._action=="New" && a.setItemValue("ngay_bd",new Date)
+			}			
+			
+			]]>
+		</text>
+	</script>
+
+	<css>
     <text>
       <![CDATA[
 .LabelDescription{color:#73A6DE;}
