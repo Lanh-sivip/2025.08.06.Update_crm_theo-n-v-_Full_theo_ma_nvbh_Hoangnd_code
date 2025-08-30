@@ -135,7 +135,7 @@ return
     
     <query event="Finding">
       <text>
-        <![CDATA[exec FastBusiness$App$Voucher$Finding
+        <![CDATA[exec CRM$App$Voucher$Finding
 @@id, @@master, @@prime, @@inquiry, @@partition, @@expression, @@increase, @@extension, @@refresh, @@pageIndex, @@pageCount, @@lastPage, @@lastCount, @@firstItem, @@lastItem, 
 @@keyMaster, @@keyDetail, 'stt_rec', @@textList, @@textExternal, 
 'a left join dmkh b on a.ma_kh = b.ma_kh', @@textOrderBy, @@admin, @@userID, 1, 
