@@ -116,10 +116,11 @@ function on$CustomerGrid$ExecuteCommand(sender, e) {
     case 'RowColChange':
       var _ma_dvcs = g._getItemValue(g._activeRow, g._getColumnOrder('ma_dvcs'));
 	  var _ma_kh = g._getItemValue(g._activeRow, g._getColumnOrder('ma_kh'));
-	  var _ma_kh = g._getItemValue(g._activeRow, g._getColumnOrder('ma_kh'));
+	  var _ten_kh = g._getItemValue(g._activeRow, g._getColumnOrder('ten_kh%l'));
       if ((v.Active.Row != v.Previous.Row) && (_ma_kh != '')) {
         view._ma_dvcs = _ma_dvcs;
 		view._ma_kh = _ma_kh;
+		view._ten_kh = _ten_kh;
 		view._currentID = _ma_kh;
         show$CustomerInformation(g);
       }
@@ -173,6 +174,7 @@ function set$ViewPanelCustomerID(f) {
 		var g = $find(f.get_id().split('_MainReport')[0] + '_MainReport');			 
 		f.getItem('ma_dvcs') && f.setItemValue('ma_dvcs', g._view._ma_dvcs);    
 		f.setItemValue('ma_kh', g._view._ma_kh);
+		f.getItem('ten_kh') && f.setItemValue('ten_kh', g._view._ten_kh);		
 	  }
 	  if (f._voucherCode && (f._voucherCode == 'PO1' || f._voucherCode == 'DXA')) {		  
 		  f.getItem('ma_gd').select();
@@ -181,6 +183,12 @@ function set$ViewPanelCustomerID(f) {
 	  if (f._voucherCode && (f._voucherCode == 'SQ1' || f._voucherCode == 'HDA' || f._voucherCode == 'PNA')) {		  
 		  f.getItem('ong_ba').select();
 		  f._controlFocus = f.getItem('ong_ba');
+		  if (f._voucherCode == 'HDA') {				 
+			f.setItemValue('s3', g._view._ma_kh);
+			f.setItemValue('ten_kh_hd', g._view._ten_kh);
+			var o = f.getItem('s3');
+			onChange$Voucher$Customerhd(o);
+		  }
 	  }
 	  if (f._voucherCode && (f._voucherCode == 'BC1' || f._voucherCode == 'BN1' || f._voucherCode == 'PT1' || f._voucherCode == 'PC1')) {		  
 		  f.getItem('dia_chi').select();
