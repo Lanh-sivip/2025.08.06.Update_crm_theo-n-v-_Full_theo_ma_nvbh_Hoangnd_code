@@ -5,6 +5,9 @@
   <subTitle v="Cập nhật quyền sử dụng: thêm, sửa, xóa..." e="Add, Edit, Delete Access Right..."></subTitle>
 
   <fields>
+	  <field name="ma_dvcs" isPrimaryKey="true" width="100" allowSorting="true" allowFilter="true" align="right">
+		  <header v="Đơn vị" e="Group Type"></header>
+	  </field>
     <field name="ma_quyen" isPrimaryKey="true" width="100" allowSorting="true" allowFilter="true">
       <header v="Mã quyền" e="Access Right"></header>
     </field>
@@ -18,6 +21,7 @@
 
   <views>
     <view id="Grid">
+		<field name="ma_dvcs"/>
       <field name="ma_quyen"/>
       <field name="ten_quyen%l"/>
       <field name="loai_quyen"/>
@@ -30,13 +34,118 @@
         <![CDATA[
 declare @message nvarchar(4000)
 select @message = ''
-if @@admin <> 1 begin
-  select @message = 'this._denyNew = true;this._denyDelete = true;'
-end
-select @message as message
+--if @@admin <> 1 begin
+--  select @message = 'this._denyNew = true;this._denyDelete = true;'
+--end
+select @message  + 'load$Grid(this);' as message
 return
 ]]>
       </text>
-    </command>
+    </command>	 
+
+	  <command event="Closing">
+		  <text>
+			  <![CDATA[select 'dispose$Grid(this);' as message
+return]]>
+		  </text>
+	  </command>
   </commands>
+	<script>
+		<text>
+			<![CDATA[
+function load$Grid(g) {
+  g.add_onResponseComplete(on$GridcrmAccessRight$ResponseComplete);  
+  g.add_commandEvent(on$GridcrmAccessRight$ExecuteCommand);
+}
+function dispose$Grid(g) {
+  try {g.remove_commandEvent(on$GridcrmAccessRight$ExecuteCommand);} catch (ex) {}
+  try {g.remove_onResponseComplete(on$GridcrmAccessRight$ResponseComplete);} catch (ex) {}  
+}
+function on$GridcrmAccessRight$ExecuteCommand(sender, e) {
+  var action = e.type.Action, g = sender;
+  switch (action) {
+    case 'CopyTemplate':	
+      request$CopyTemplate(g, action);
+      break; 
+    default:
+      break;
+  }
+}
+function on$GridcrmAccessRight$ResponseComplete(sender, e) {
+  var g = e.object, context = e.type.Context, result = e.type.Result, o = e.type.Object;
+  switch (context) {
+    case 'CopyTemplate':
+      g.goToPage(-1)
+	  var msg = (g._language == 'v' ? result[0].Value : result[0].Value);
+	  $message.show(msg);
+      break;   
+    default:
+      break;
+  }
+}
+function request$CopyTemplate(g, c) {
+	g.request(g, 'CopyTemplate', 'CopyTemplate', []);
+}
+]]>
+		</text>
+	</script>
+	<css>
+		<text>
+			<![CDATA[
+	div.CopyTemplate{
+		background-image:url(../images/sivip/chepmd.jpg)!important;
+		background-repeat:no-repeat!important;
+		background-position:0 -23px!important;
+		width:105px!important
+	}
+	div.CopyTemplateOverGreen{
+		background-position:0 0px!important;
+		}			
+	]]>
+		</text>
+	</css>
+
+	<response>
+		<action id="CopyTemplate">
+			<text>
+				<![CDATA[
+if exists (select 1 from @@sysDatabaseName..crmdmquyen where ma_dvcs = @@unit) begin
+	select N'Danh mục đã có thông tin' as value
+end else begin
+	select * into #d from @@sysDatabaseName..crmdmquyen where ma_dvcs = '9999'
+	update #d set ma_dvcs = @@unit
+	insert into @@sysDatabaseName..crmdmquyen select * from #d
+	select N'Tạo thành công' as value
+end
+return
+]]>
+			</text>
+		</action>
+	</response>
+	<toolbar>
+		<button command="New">
+			<title v="Toolbar.New" e="Toolbar.New"></title>
+		</button>
+		<button command="Edit">
+			<title v="Toolbar.Edit" e="Toolbar.Edit"></title>
+		</button>
+		<button command="Delete">
+			<title v="Toolbar.Delete" e="Toolbar.Delete"></title>
+		</button>
+		<button command="View">
+			<title v="Toolbar.View" e="Toolbar.View"></title>
+		</button>
+		<button command="CopyTemplate">
+			<title v="Tạo thông tin mẫu" e="Template Creation"></title>
+		</button>
+		<button command="Export">
+			<title v="Toolbar.Export" e="Toolbar.Export"/>
+		</button>
+		<button command="Separate">
+			<title v="-" e="-"/>
+		</button>
+		<button command="Freeze">
+			<title v="Toolbar.Freeze" e="Toolbar.Freeze"></title>
+		</button>
+	</toolbar>
 </grid>
