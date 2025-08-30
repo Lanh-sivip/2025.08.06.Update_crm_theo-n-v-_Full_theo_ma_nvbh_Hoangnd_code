@@ -9,6 +9,9 @@
   <subTitle v="Khai báo quyền chức năng" e="Defining Task Access Control"></subTitle>
 
   <fields>
+	  <field name="ma_dvcs" isPrimaryKey="true" width="100" allowSorting="true" allowFilter="true" align="right">
+		  <header v="Đơn vị" e="Group Type"></header>
+	  </field>
     <field name="ma_quyen" isPrimaryKey="true" width="100" allowSorting="true" allowFilter="true">
       <header v="Mã quyền" e="Access Right"></header>
     </field>
@@ -19,6 +22,7 @@
 
   <views>
     <view id="Grid">
+		<field name="ma_dvcs"/>
       <field name="ma_quyen"/>
       <field name="ten_quyen%l"/>
     </view>
