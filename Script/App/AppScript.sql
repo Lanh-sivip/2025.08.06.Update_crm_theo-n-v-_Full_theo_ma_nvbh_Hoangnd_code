@@ -990,7 +990,289 @@ END
 
 
 
- 
+ GO
+
+		IF EXISTS (SELECT * FROM syscolumns WHERE id = object_id('dbo.crmnhatky') AND name = 'ma_lienhe') 
+	ALTER TABLE dbo.crmnhatky AlTER COLUMN ma_lienhe CHAR(3)
+GO
+
+
+GO
+
+
+
+
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = OBJECT_ID(N'dbo.CRM$App$Voucher$Finding') AND xType = 'P')
+DROP PROCEDURE dbo.CRM$App$Voucher$Finding
+GO
+
+
+CREATE PROCEDURE [dbo].[CRM$App$Voucher$Finding]
+	@VoucherCode VARCHAR(32),
+	@PartitionTable VARCHAR(32),
+	@PartitionPrime VARCHAR(32),
+	@PartitionInquiry VARCHAR(32),
+	@PartitionField VARCHAR(32),
+	@PartitionExpression VARCHAR(512),
+	@PartitionIncrease VARCHAR(512),
+	@PartitionDefault VARCHAR(32),
+	@Refresh BIT,
+	@PageIndex INT, 
+	@PageCount INT, 
+	@LastPage INT, 
+	@LastCount INT, 
+	@FirstItem VARCHAR(128),
+	@LastItem VARCHAR(128),
+	@KeyMaster VARCHAR(512),
+	@KeyDetail VARCHAR(512),
+	@PrimaryFields VARCHAR(32),
+	@InternalFields VARCHAR(4000),
+	@ExternalFields VARCHAR(4000),
+	@ExternalFromClause VARCHAR(4000),
+	@OrderByClause VARCHAR(128), 
+	@Admin BIT,
+	@UserID INT, 
+	@ViewAccessMode BIT, 
+	@DateFrom SMALLDATETIME, 
+	@DateTo SMALLDATETIME, 
+	@NumberFrom VARCHAR(32), 
+	@NumberTo VARCHAR(32), 
+	@Status VARCHAR(32),
+	@Owner BIT, 
+	@Unit VARCHAR(32) = '', 
+	@AppType TINYINT = 0, 
+	@ProcessType TINYINT = 0
+AS
+BEGIN
+	SET NOCOUNT ON
+	IF @VoucherCode = 'HDA' BEGIN
+		SET @ExternalFields = REPLACE(@ExternalFields,'ma_ct','RIGHT(stt_rec_thu,3) as ma_ct')
+		SET @InternalFields = REPLACE(@InternalFields,'rtrim(ma_ct)','RIGHT(stt_rec_thu,3)')
+	END
+	IF @VoucherCode = 'PNA' BEGIN
+		SET @ExternalFields = REPLACE(@ExternalFields,'ma_ct','RIGHT(stt_rec_chi,3) as ma_ct')
+		SET @InternalFields = REPLACE(@InternalFields,'rtrim(ma_ct)','RIGHT(stt_rec_chi,3)')
+	END
+	-- Declare
+	DECLARE @RangeFrom SMALLDATETIME, @RangeTo SMALLDATETIME, @UnitKey VARCHAR(1024), @SiteKey VARCHAR(1024), @strSQL NVARCHAR(4000), @Key VARCHAR(4000)
+	DECLARE @ItemCount INT, @KeyRangeFrom VARCHAR(4000), @KeyRangeTo VARCHAR(4000), @KeyScope VARCHAR(4000), @PageKey VARCHAR(4000)
+	DECLARE @c VARCHAR(128), @d SMALLDATETIME, @i INT, @n INT, @t INT, @delta INT, @v INT, @o VARCHAR(32), @b BIT
+
+	SELECT @ItemCount = 0, @o = ' desc', @PageIndex = CASE WHEN @PageIndex < 0 THEN 0 ELSE @PageIndex END
+	IF @AppType = 0 AND (@DateFrom > @DateTo) OR (EXISTS(SELECT 1 FROM dmstt WHERE @DateFrom > ngay_gh2 OR @DateTo < ngay_gh1) AND @PartitionExpression <> '''''') BEGIN
+		GOTO QueryEmpty
+		RETURN
+	END
+
+	IF @AppType = 0 BEGIN
+		IF @PartitionExpression = '''''' BEGIN
+			SELECT @RangeFrom = MAX(VALUE) FROM (SELECT @DateFrom AS VALUE UNION ALL SELECT ngay_ct1 FROM	sysdaterules WHERE user_id = @UserID) a
+			SELECT @RangeTo = MIN(VALUE) FROM (SELECT @DateTo AS VALUE UNION ALL SELECT ngay_ct2 FROM	sysdaterules WHERE user_id = @UserID) a
+		END ELSE BEGIN
+			SELECT @RangeFrom = MAX(VALUE) FROM (SELECT @DateFrom AS VALUE UNION ALL SELECT ngay_gh1 FROM dmstt UNION ALL SELECT ngay_ct1 FROM	sysdaterules WHERE user_id = @UserID) a
+			SELECT @RangeTo = MIN(VALUE) FROM (SELECT @DateTo AS VALUE UNION ALL SELECT ngay_gh2 FROM dmstt UNION ALL SELECT ngay_ct2 FROM	sysdaterules WHERE user_id = @UserID) a
+		END
+	END
+
+	IF @RangeFrom > @RangeTo BEGIN
+		GOTO QueryEmpty
+		RETURN
+	END
+
+	-- Key
+	SELECT @UnitKey = NULL, @Key = '', @KeyRangeFrom = '', @KeyRangeTo = '', @SiteKey = ''
+	IF @Admin = 0 AND @AppType = 0 BEGIN
+		SELECT @UnitKey = dbo.FastBusiness$Function$System$GetUnitKey(@UserID)
+		IF @UnitKey IS NULL BEGIN
+			GOTO QueryEmpty
+			RETURN
+		END
+	END
+
+	IF (@Admin = 0 OR @ProcessType = 1) AND @AppType = 0 SELECT @SiteKey = dbo.FastBusiness$Function$System$GetSiteKey(@VoucherCode, @UserID, 0)
+
+	IF @AppType = 0 AND @NumberFrom <> '' SELECT @Key = @Key + CASE WHEN @Key = '' THEN '' ELSE ' and ' END +	'(so_ct >= ''' + REPLACE(@NumberFrom, '''', '''''') + ''')'
+	IF @AppType = 0 AND @NumberTo <> '' SELECT @Key = @Key + CASE WHEN @Key = '' THEN '' ELSE ' and ' END +	'(so_ct <= ''' + REPLACE(@NumberTo, '''', '''''') + ''')'
+	IF @AppType = 0 AND @Status <> '*' SELECT @Key = @Key + CASE WHEN @Key = '' THEN '' ELSE ' and ' END +	CASE 
+		WHEN CHARINDEX(',', @Status) =0 THEN '(status = ''' + REPLACE(@Status, '''', '''''') + ''')'
+		ELSE '(status in (''' + REPLACE(REPLACE(REPLACE(@Status, ' ', ''), '''', ''''''), ',', ''',''') + '''))'
+	END
+	IF @AppType = 0 AND @Admin = 0 SELECT @Key = @Key + CASE WHEN @Key = '' THEN '' ELSE ' and ' END + @UnitKey
+	IF @SiteKey <> '' SELECT @Key = @Key + CASE WHEN @Key = '' THEN '' ELSE ' and ' END + @SiteKey
+	IF @AppType = 0 AND @Unit <> '' SELECT @Key = @Key + CASE WHEN @Key = '' THEN '' ELSE ' and ' END +	+	'(ma_dvcs like ''' + REPLACE(RTRIM(LTRIM(@Unit)), '''', '''''') + '%'')'
+	IF @Owner = 1 OR (@Admin = 0 AND @ViewAccessMode = 0) SELECT @Key = @Key + CASE WHEN @Key = '' THEN '' ELSE ' and ' END + '(user_id0 = ' + RTRIM(LTRIM(STR(@UserID))) + ')'
+	IF @KeyMaster <> '' SELECT @Key = @Key + CASE WHEN @Key = '' THEN '' ELSE ' and ' END + '(m$ like ''' + REPLACE(@KeyMaster, '''', '''''') + ''')'
+	IF @KeyDetail <> '' SELECT @Key = @Key + CASE WHEN @Key = '' THEN '' ELSE ' and ' END + '(d$ like ''' + REPLACE(@KeyDetail, '''', '''''') + ''')'
+
+	IF @AppType = 0 SELECT @KeyRangeFrom = '(ngay_ct >= ''' + CONVERT(CHAR(8), @RangeFrom, 112) + ''')' + CASE WHEN @Key = '' THEN '' ELSE ' and ' END + @Key, 
+		@KeyRangeTo = '(ngay_ct <= ''' + CONVERT(CHAR(8), @RangeTo, 112) + ''')' + CASE WHEN @Key = '' THEN '' ELSE ' and ' END + @Key, 
+		@KeyScope = '(ngay_ct between ''' + CONVERT(CHAR(8), @RangeFrom, 112) + ''' and ''' + CONVERT(CHAR(8), @RangeTo, 112) + ''')' + CASE WHEN @Key = '' THEN '' ELSE ' and ' END + @Key
+	ELSE SELECT @KeyRangeFrom = '1 = 1' + CASE WHEN @Key = '' THEN '' ELSE ' and ' END + @Key, 
+		@KeyRangeTo = '1 = 1'	+ CASE WHEN @Key = '' THEN '' ELSE ' and ' END + @Key,
+		@KeyScope = '1 = 1' + CASE WHEN @Key = '' THEN '' ELSE ' and ' END + @Key
+
+	-- Struct
+	CREATE TABLE #e(expression VARCHAR(32))
+	CREATE TABLE #v(c VARCHAR(32) NULL, d SMALLDATETIME)
+	CREATE TABLE #n(expression VARCHAR(32), n INT)
+	CREATE TABLE #r(c$ VARCHAR(128), c VARCHAR(13), expression VARCHAR(32))
+
+	-- Expression
+	SELECT @strSQL = 'insert into #v (c) select ' +	REPLACE(@PartitionExpression, '{0}', '''' + CONVERT(CHAR(8), @RangeTo, 112) + '''')
+	EXEC sp_executesql @strSQL
+
+	SELECT @c = c, @d = @RangeFrom FROM #v
+	WHILE @AppType = 0	BEGIN
+		IF EXISTS(SELECT 1 FROM #e WHERE expression = @c) BREAK
+		SELECT @strSQL = 'insert into #e select ' +	REPLACE(@PartitionExpression, '{0}', '''' + CONVERT(CHAR(8), @d, 112) + '''') + ' delete #v insert into #v (d) select ' + REPLACE(@PartitionIncrease, '{0}', '''' + CONVERT(CHAR(8), @d, 112) + '''')
+		EXEC sp_executesql @strSQL
+		--
+		SELECT @d = d FROM #v
+	END
+	IF @AppType = 1 BEGIN
+		SELECT @strSQL = 'insert into #e select ' +	REPLACE(@PartitionExpression, '{0}', '''' + ''+ '''') 
+		EXEC sp_executesql @strSQL
+	END
+
+	-- Optimize
+	IF @AppType = 0 AND @PartitionExpression <> '''''' AND @Refresh <> 1 AND @PageIndex > 0 BEGIN
+		IF @PageIndex > @LastPage BEGIN -- Next
+			IF @LastItem <> '' DELETE #e WHERE expression > LEFT(@LastItem, 6)
+		END
+		ELSE IF @PageIndex < @LastPage BEGIN -- Prev
+			IF @FirstItem <> '' DELETE #e WHERE expression < LEFT(@FirstItem, 6)
+		END
+	END
+
+	SELECT @n = COUNT(*) FROM #e
+	-- Count
+	IF @Refresh = 1 BEGIN
+		SELECT @i = 1
+		DECLARE e CURSOR FOR SELECT DISTINCT expression FROM #e ORDER BY expression FOR	READ ONLY
+		OPEN e
+		FETCH NEXT FROM e INTO @c
+		WHILE @@FETCH_STATUS = 0 BEGIN
+			SELECT @strSQL = 'insert into #n select ''' + REPLACE(@c, '''', '''''') + ''', count(1) from ' + @PartitionInquiry + @c + ' with (nolock)' + CASE
+				WHEN @i = 1 THEN ' where ' + CASE WHEN @i = @n THEN @KeyScope ELSE @KeyRangeFrom END
+				ELSE CASE
+					WHEN @i = @n THEN ' where ' + @KeyRangeTo
+					ELSE CASE WHEN @Key = '' THEN '' ELSE ' where ' + @Key END
+				END
+			END
+			EXEC sp_executesql @strSQL
+
+			--
+			SELECT @i = @i + 1
+			FETCH NEXT FROM e INTO @c
+		END
+		CLOSE e
+		DEALLOCATE e
+
+		SELECT @ItemCount = SUM(n) FROM #n
+		SELECT @ItemCount = ISNULL(@ItemCount, 0)
+		IF @ItemCount = 0 GOTO QueryEmpty
+		IF @PageCount > @ItemCount SELECT @PageCount = @ItemCount
+	END
+		ELSE IF @PageCount > @LastCount SELECT @PageCount = @LastCount
+
+	--	PageKey
+	SELECT @PageKey = '', @delta = 0, @v = 0
+	IF @PageIndex > 0 AND @LastItem <> '' BEGIN
+		IF @PageIndex = @LastPage SELECT @PageKey = 'c$ <= ''' + REPLACE(@FirstItem, '''', '''''') + ''''
+		ELSE BEGIN
+			IF @PageIndex > @LastPage SELECT @delta = (@PageIndex - @LastPage -1) * @PageCount, @PageKey = 'c$ < ''' + REPLACE(@LastItem, '''', '''''') + ''''
+				ELSE SELECT @delta = (@LastPage - @PageIndex -1) * @PageCount, @PageKey = 'c$ > ''' + @FirstItem + '''', @o = ' desc'
+		END
+	END
+	
+	IF @PageIndex > 0 AND ((@PageIndex + 1) * @PageCount >= @LastCount) SELECT @v = (@PageIndex + 1) * @PageCount - @LastCount
+
+
+	-- Primary
+	IF (@PageIndex >= @LastPage) OR (@Refresh = 1) OR (@PageIndex = 0) DECLARE r CURSOR FOR SELECT DISTINCT expression FROM #e ORDER BY expression DESC FOR	READ ONLY
+		ELSE DECLARE r CURSOR FOR SELECT DISTINCT expression FROM #e ORDER BY expression	FOR	READ ONLY
+	
+	SELECT @i = 1
+	OPEN r
+	FETCH NEXT FROM r INTO @c
+	WHILE @@FETCH_STATUS = 0 BEGIN
+		SELECT @t = COUNT(*) FROM #r
+	
+		IF (@t >= @PageCount + @delta) BREAK
+		SELECT @b = 1
+		--
+		IF @Refresh = 1 BEGIN
+			IF NOT EXISTS(SELECT * FROM #n WHERE expression = @c AND n > 0) SELECT @b = 0
+		END
+		
+	
+		IF @b = 1 BEGIN
+			SELECT @strSQL = 'insert into #r select top ' + LTRIM(STR(@PageCount - @v + @delta - @t)) + ' c$, ' + @PrimaryFields + ', ' + REPLACE(@PartitionExpression, '{0}', @PartitionField)
+			SELECT @strSQL = @strSQL+ ' from ' + @PartitionInquiry + @c + ' with (nolock)' + CASE
+				WHEN @i = 1 THEN ' where ' + CASE WHEN @i = @n THEN @KeyScope ELSE @KeyRangeFrom END + CASE WHEN @PageKey = '' THEN '' ELSE ' and (' + @PageKey + ')' END
+				ELSE CASE
+					WHEN @i = @n THEN ' where ' + @KeyRangeTo +	CASE WHEN @PageKey = '' THEN '' ELSE ' and (' + @PageKey + ')' END
+					ELSE CASE 
+						WHEN @Key = '' THEN CASE WHEN @PageKey = '' THEN '' ELSE ' where ' + @PageKey END
+						ELSE ' where ' + @Key +	CASE WHEN @PageKey = '' THEN '' ELSE ' and (' + @PageKey + ')' END
+					END
+				END
+			END + ' order by c$' + @o
+			EXEC sp_executesql @strSQL			
+		END
+		--
+		SELECT @i = @i + 1
+		FETCH NEXT FROM r INTO @c
+	END
+	CLOSE r
+	DEALLOCATE r
+
+	IF @delta > 0 BEGIN
+		IF @PageIndex > @LastPage SELECT @strSQL = 'delete #r where c$ in (select top ' + LTRIM(STR(@delta)) + ' c$ from #r order by c$)'
+			ELSE SELECT @strSQL = 'delete #r where c$ not in (select top ' + LTRIM(STR(@PageCount)) + ' c$ from #r order by c$)'
+		EXEC sp_executesql @strSQL
+	END
+
+	-- Data
+	IF EXISTS(SELECT * FROM #r) BEGIN
+		CREATE TABLE #t(t$ BIT)
+		SELECT @strSQL = 'select top 0 ' + @InternalFields + ' from ' + @PartitionPrime + @PartitionDefault
+		EXEC FastBusiness$App$Dynamic$AddColumn '#t', @strSQL
+		ALTER TABLE #t DROP COLUMN t$
+		--
+		DECLARE c CURSOR FOR SELECT DISTINCT expression FROM #r ORDER BY expression FOR	READ ONLY
+		OPEN c
+		FETCH NEXT FROM c INTO @c
+		WHILE @@FETCH_STATUS = 0 BEGIN
+			SELECT @strSQL = 'insert into #t select ' + @InternalFields + ' from ' + @PartitionPrime + @c + ' with (nolock) where ' + @PrimaryFields + ' in (select c from #r)'
+			EXEC sp_executesql @strSQL
+			--
+			FETCH NEXT FROM c INTO @c
+		END
+		CLOSE c
+		DEALLOCATE c
+		--
+		IF @Refresh = 1 SELECT @ItemCount AS VALUE
+		SELECT @strSQL = 'select	' + @ExternalFields + ' from #t ' + @ExternalFromClause + ' order by ' + @OrderByClause
+		EXEC sp_executesql @strSQL
+	END ELSE GOTO QueryEmpty
+
+	GOTO Result;
+
+	QueryEmpty:
+	IF @Refresh = 1 SELECT @ItemCount AS VALUE
+	SELECT @strSQL = 'select top 0 ' + @ExternalFields + ' from ' + @PartitionPrime + @PartitionDefault + ' ' + @ExternalFromClause
+	EXEC sp_executesql @strSQL
+
+	Result:
+
+	SET NOCOUNT OFF
+	RETURN
+END
+
+
+
+
 
 
 
@@ -1002,6 +1284,7 @@ INSERT INTO crmgdtn(ma_dvcs, ma_gdtn, ten_gdtn, ten_gdtn2, ghi_chu, ti_le, statu
 INSERT INTO crmgdtn(ma_dvcs, ma_gdtn, ten_gdtn, ten_gdtn2, ghi_chu, ti_le, status, datetime0, datetime2, user_id0, user_id2, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s2, s3, s4, s5, s6, s7, s8, s9) VALUES(N'9999', N'02', N'Hẹn gặp', N'', N'', NULL, N'1', '20250101 00:00:00', '20250101 00:00:00', 1, NULL, N'', N'', N'', NULL, NULL, NULL, NULL, NULL, NULL, N'', N'', N'', N'', N'', N'', NULL, NULL, NULL, NULL, NULL, NULL)
 INSERT INTO crmgdtn(ma_dvcs, ma_gdtn, ten_gdtn, ten_gdtn2, ghi_chu, ti_le, status, datetime0, datetime2, user_id0, user_id2, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s2, s3, s4, s5, s6, s7, s8, s9) VALUES(N'9999', N'03', N'Gửi báo giá', N'', N'', NULL, N'1', '20250101 00:00:00', '20250101 00:00:00', 1, NULL, N'', N'', N'', NULL, NULL, NULL, NULL, NULL, NULL, N'', N'', N'', N'', N'', N'', NULL, NULL, NULL, NULL, NULL, NULL)
 INSERT INTO crmgdtn(ma_dvcs, ma_gdtn, ten_gdtn, ten_gdtn2, ghi_chu, ti_le, status, datetime0, datetime2, user_id0, user_id2, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s2, s3, s4, s5, s6, s7, s8, s9) VALUES(N'9999', N'04', N'Xuất hóa đơn', N'', N'', NULL, N'1', '20250101 00:00:00', '20250101 00:00:00', 1, NULL, N'', N'', N'', NULL, NULL, NULL, NULL, NULL, NULL, N'', N'', N'', N'', N'', N'', NULL, NULL, NULL, NULL, NULL, NULL)
+
 
 
 
