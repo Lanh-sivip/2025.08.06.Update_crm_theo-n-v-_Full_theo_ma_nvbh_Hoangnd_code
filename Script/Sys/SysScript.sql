@@ -571,7 +571,6 @@ END
 
 GO
 
-
 IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = OBJECT_ID(N'dbo.Sthink$System$GetAccessRight') AND xType = 'P')
 DROP PROCEDURE dbo.Sthink$System$GetAccessRight
 GO
@@ -583,34 +582,32 @@ BEGIN
 	DECLARE @c VARCHAR(4), @r INT
 	SELECT @c = '0000', @r = 0
 	IF @controller IN('DashBoardNS_DSNV', 'DashBoardNS_DSNVTV', 'DashBoardNS_DSNVNV', 'DashBoardNS_DSNVNH', 'DashboardKho_ChiTietNhap', 'DashboardKho_ChiTietXuat', 'DashboardKho_TonVatTu', 'DashboardKho_TonCham', 'DashboardSXTK_VTTieuHao') BEGIN
-
 		SELECT '1' AS VALUE
 		RETURN
 	END
-	IF EXISTS(SELECT 1 FROM accessrights WHERE user_id = @id AND controller = @controller) BEGIN
-		IF @type = 0 SELECT @c = 
-				CASE WHEN r_access = 1 THEN '1' ELSE '0' END + 
-				CASE WHEN r_new = 1 THEN '1' ELSE '0' END + 
-				CASE WHEN r_edit = 1 THEN '1' ELSE '0' END + 
-				CASE WHEN r_del = 1 THEN '1' ELSE '0' END
-			FROM accessrights WHERE user_id = @id AND controller = @controller
-		ELSE
-			SELECT @r = CASE
-				WHEN @right = 'access' THEN r_access
-				WHEN @right = 'new' THEN r_new
-				WHEN @right = 'edit' THEN r_edit
-				WHEN @right = 'del' THEN r_del
-				ELSE 0
-			END
-			FROM accessrights WHERE user_id = @id AND controller = @controller
+	IF @controller = 'svarttpbtd_detail' SET @controller = 'svarttpbtd'
+	IF @controller = 'svListhddv_detail' SET @controller = 'svListhddv'
+	IF @controller = 'svListhddr_detail' SET @controller = 'svListhddr'
+	SELECT * INTO #accessrights FROM accessrights WHERE 1=0
+	INSERT INTO #accessrights VALUES (@id, @controller, 0, 0, 0, 0)
+	DECLARE @s VARCHAR(32)
+	SELECT @s = MIN(menu_id) FROM wcommand WHERE sysid = @controller
+	IF EXISTS(SELECT 1 FROM userinfo WHERE id = @id AND PATINDEX('%' + RTRIM(@s) + '%', r_access) <> 0) UPDATE #accessrights SET r_access = 1
+	IF EXISTS(SELECT 1 FROM userinfo WHERE id = @id AND PATINDEX('%' + RTRIM(@s) + '%', r_new) <> 0) UPDATE #accessrights SET r_new = 1
+	IF EXISTS(SELECT 1 FROM userinfo WHERE id = @id AND PATINDEX('%' + RTRIM(@s) + '%', r_edit) <> 0) UPDATE #accessrights SET r_edit = 1
+	IF EXISTS(SELECT 1 FROM userinfo WHERE id = @id AND PATINDEX('%' + RTRIM(@s) + '%', r_del) <> 0) UPDATE #accessrights SET r_del = 1
+
+	IF EXISTS (SELECT * FROM accessrights WHERE controller = @controller AND user_id = @id) AND NOT EXISTS(SELECT 1 FROM wcommand WHERE sysid = @controller) BEGIN 
+		INSERT INTO #accessrights SELECT * FROM accessrights WHERE controller = @controller AND user_id = @id
 	END
-	IF EXISTS(SELECT 1 FROM crmaccessrights WHERE user_id = @id AND controller = @controller) BEGIN
+	--select * from #accessrights
+	IF EXISTS(SELECT 1 FROM #accessrights WHERE user_id = @id AND controller = @controller) BEGIN
 		IF @type = 0 SELECT @c = 
 				CASE WHEN r_access = 1 THEN '1' ELSE '0' END + 
 				CASE WHEN r_new = 1 THEN '1' ELSE '0' END + 
 				CASE WHEN r_edit = 1 THEN '1' ELSE '0' END + 
 				CASE WHEN r_del = 1 THEN '1' ELSE '0' END
-			FROM crmaccessrights WHERE user_id = @id AND controller = @controller
+			FROM #accessrights WHERE user_id = @id AND controller = @controller
 		ELSE
 			SELECT @r = CASE
 				WHEN @right = 'access' THEN r_access
@@ -619,15 +616,13 @@ BEGIN
 				WHEN @right = 'del' THEN r_del
 				ELSE 0
 			END
-			FROM crmaccessrights WHERE user_id = @id AND controller = @controller
+			FROM #accessrights WHERE user_id = @id AND controller = @controller
 	END
 	IF @type = 0 SELECT @c AS VALUE
 		ELSE SELECT @r AS VALUE
 	
 	SET NOCOUNT OFF
 END
-
-
 
 
 
